@@ -1,14 +1,18 @@
 # Releasing VectorCraft
 
-> **Last updated:** 2026-10-12 · **Change:** minor (RPM runtime capabilities and metadata checks, #1275)
+> **Last updated:** 2026-10-21 · **Change:** releases go through the Arthavan Projects release workflow (685ks/craft-actions)
 
-Every push to the `release` branch runs `.github/workflows/release.yml`. The workflow builds
-installers for macOS, Windows, Linux (including Flatpak bundles and a RISC-V tarball) and FreeBSD, plus the web build, and creates or updates a
-**draft** GitHub Release named `VectorCraft v<version>`. Nobody sees a draft until a maintainer
-publishes it.
+`.github/workflows/release.yml` calls the shared Arthavan Projects release workflow,
+`685ks/craft-actions/.github/workflows/release-rust-app.yml`, which builds, packages and signs
+VectorCraft and creates the GitHub Release `v<version>` on this repository. It runs only when started
+by hand. The Arthavan Projects launcher installs and updates VectorCraft from these releases, so a
+launcher-started VectorCraft (`ARTHAVAN_LAUNCHER=1`) runs no updater of its own and its About box says
+"Updates are managed by Arthavan Projects". Packaging metadata the shared workflow reads (app id,
+display name, bundle id `app.freedev.ainz.ks.VectorCraft`, publisher, categories, icons, license)
+is in [`packaging/app.toml`](../packaging/app.toml).
 
 User-facing names say **VectorCraft**. Files, binaries and ids stay lowercase
-(`vectorcraft-<version>-<platform>-<arch>.<ext>`, `ai.storyteller.vectorcraft`).
+(`vectorcraft-<version>-<platform>-<arch>.<ext>`, `app.freedev.ainz.ks.VectorCraft`).
 
 ## Cutting a release
 
@@ -20,27 +24,15 @@ User-facing names say **VectorCraft**. Files, binaries and ids stay lowercase
    cargo xtask version set 0.4.0       # or 0.4.0-rc.1; updates Cargo.toml and Cargo.lock
    ```
 
-   Commit the change (`Cargo.toml` + `Cargo.lock`) through the normal review flow, as a
-   `Release: VectorCraft v0.4.0` commit whose message says what changed for users.
-2. **Merge `main` into `release`** (or fast-forward it) and push. The workflow starts by itself.
-3. **Wait for the draft.** When every job is done (macOS notarization is the slow part), the
-   Releases page has a draft `VectorCraft v0.4.0`, targeting the pushed commit, with every
-   artifact and `SHA256SUMS.txt`. The notes are generated from the merged pull requests.
-4. **Check it.** Download an installer or two and read the job summaries. A `::warning::` there
-   means a signing secret was missing and that artifact is unsigned.
-5. **Publish** the draft in the GitHub UI. Publishing creates the `v0.4.0` tag. A version with a
-   pre-release suffix (`-rc.1`) is marked as a pre-release.
+   Commit the change (`Cargo.toml` + `Cargo.lock`) through the normal review flow.
+2. **Start the release**: *Actions › Release › Run workflow* on `main`, with `version` set to that
+   version (without the `v`). Leave `publish` off for a draft you check first; set `prerelease` for
+   a `-rc` build.
+3. **Check the draft.** Download an installer or two and read the job summaries.
+4. **Publish** the draft in the GitHub UI (or run the workflow again with `publish` on).
 
-Pushing to `release` again before you publish rebuilds the same draft and replaces its assets.
-Once the draft is published, the workflow refuses to touch that version again: bump it first.
-
-**Test runs:** *Actions › Release › Run workflow* runs the whole pipeline by hand. The optional
-`version` input (such as `0.4.0-rc.1`) overrides `Cargo.toml` for that run only; each build job
-applies it with `cargo xtask version set` before building. The signing jobs (macOS, Windows) and
-the draft-release job run in the `release` environment, which only the `release` branch can use, so
-pick that branch for a full run. Run on any other branch, it is a dry run: the Linux, Flatpak,
-FreeBSD and web jobs build and upload their artifacts, the environment refuses the signing jobs,
-and no draft release is created.
+The platform notes below describe the packaging scripts in `packaging/`, which the release builds
+use; which platforms a release covers is decided by the shared workflow.
 
 ## What gets built
 
@@ -60,7 +52,7 @@ and no draft release is created.
 
 `vectorcraft --version` and `vectorcraft-cli --version` print the version from `Cargo.toml`.
 
-**Fonts.** Every build job checks out [craft-fonts](https://github.com/storytold/craft-fonts) at a
+**Fonts.** Every build job checks out [craft-fonts](https://github.com/685ks/craft-fonts) at a
 pinned commit (the `ref:` of its craft-fonts checkout step) and builds with `CRAFT_FONTS_DIR` and
 `CRAFT_FONTS_REQUIRED=1`, so releases embed its Japanese fonts and fail rather than ship without
 them (the web build embeds only the UI font, BIZ UDPGothic Regular, to stay small). The packages carry each embedded font's licence as `OFL-<family>.txt`
@@ -73,7 +65,7 @@ The rules are in craftrules `standards/fonts.md`, the build option in
 `packaging/macos/package.sh` builds `aarch64-apple-darwin` and `x86_64-apple-darwin` with
 `MACOSX_DEPLOYMENT_TARGET=11.0`, joins them with `lipo` and assembles `VectorCraft.app`:
 
-- `Info.plist` is generated from `Info.plist.in` (bundle id `ai.storyteller.vectorcraft`,
+- `Info.plist` is generated from `Info.plist.in` (bundle id `app.freedev.ainz.ks.VectorCraft`,
   `LSMinimumSystemVersion` 11.0, the version and the build commit). The icon is
   `assets/app-icon/vectorcraft.icns`. `cargo xtask bundle` fills in the same template for its
   development app.
@@ -161,7 +153,7 @@ AppStream metainfo, the MIME type for VectorCraft documents, the icons and the l
 
 **Document types.** The desktop entry's `MimeType` lists every format File › Open reads but PSD,
 PSB, `.ps` PostScript and Targa, so file managers list VectorCraft under Open With for them.
-`ai.storyteller.vectorcraft.mime.xml` declares the types that shared-mime-info lacks: VectorCraft
+`app.freedev.ainz.ks.VectorCraft.mime.xml` declares the types that shared-mime-info lacks: VectorCraft
 documents and templates, `.ait` templates and Affinity files (`application/x-affinity`). An `.af`
 file gets the Affinity type by its content, and `.afdesign` and `.afpub` files by their extension.
 A test keeps both files in step with the engine's `OPEN_EXTS`.
@@ -194,7 +186,7 @@ against riscv64 libraries from ports.ubuntu.com (so the floor there is glibc 2.3
 `EMULATOR=qemu-riscv64` set: a `.tar.gz` only, with `vectorcraft-cli --version` run under QEMU.
 
 **AppImage updates.** Each AppImage embeds the update information
-`gh-releases-zsync|storytold|vectorcraft|latest|vectorcraft-*-linux-<arch>.AppImage.zsync`
+`gh-releases-zsync|685ks|vectorcraft|latest|vectorcraft-*-linux-<arch>.AppImage.zsync`
 (appimagetool `-u`), and `package.sh` writes the matching `.zsync` beside it when `zsyncmake` (the
 `zsync` package) is installed. [AppImageUpdate](https://github.com/AppImageCommunity/AppImageUpdate)
 and AppImageLauncher then download only the changed blocks from the newest published,
@@ -202,10 +194,10 @@ non-pre-release release. The job checks both are there.
 
 **Flatpak.** The `flatpak` jobs (x86_64 on `ubuntu-24.04`, aarch64 on `ubuntu-24.04-arm`) take the
 Linux job's tarball and repackage it with `packaging/linux/flatpak-bundle.sh` and
-`packaging/linux/flatpak/ai.storyteller.vectorcraft.bundle.yml` into a single-file bundle
+`packaging/linux/flatpak/app.freedev.ainz.ks.VectorCraft.bundle.yml` into a single-file bundle
 (`flatpak install --user vectorcraft-<v>-linux-<arch>.flatpak`), then install it and run
 `vectorcraft-cli --version` in the sandbox. No Rust build happens there, so the bundle carries the
-same binaries as the AppImage. `packaging/linux/flatpak/ai.storyteller.vectorcraft.yml` is the
+same binaries as the AppImage. `packaging/linux/flatpak/app.freedev.ainz.ks.VectorCraft.yml` is the
 from-source manifest for a Flathub submission (its header says how to build it); packaging-lint
 keeps the runtime and sandbox permissions of the two manifests identical.
 
