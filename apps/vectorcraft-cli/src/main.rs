@@ -70,7 +70,9 @@ vectorcraft-cli — VectorCraft automation
 USAGE:
   vectorcraft-cli mcp [--connect ADDR | --headless] [--automation-read-root DIR] [--automation-write-root DIR]
       Run the MCP server on stdio. Default: connect to a running app at 127.0.0.1:7979
-      (vectorcraft --control 7979), falling back to a headless in-process session.
+      (vectorcraft --control 7979), falling back to a headless in-process session. The app's
+      control token comes from VECTORCRAFT_CONTROL_TOKEN, else the token file
+      (VECTORCRAFT_CONTROL_TOKEN_FILE, default <settings folder>/control-token) the app wrote.
       --automation-read-root / --automation-write-root confine the files the agent's commands read
       (open, place, relink, library loads…) and write (save, export, package, library saves…) to
       DIR, links followed; a root left out grants none of its access. They imply --headless: a
@@ -215,11 +217,20 @@ fn mcp(args: &[String]) -> Result<(), String> {
         Box::new(with_stores(Headless::with_document()))
     } else if let Some(addr) = connect {
         // Explicit address: fail loudly if the app isn't there.
-        Box::new(Remote::connect(&addr).map_err(|e| format!("cannot connect to {addr}: {e}"))?)
+        Box::new(Remote::connect_with_token(&addr, control_token()?).map_err(|e| format!("cannot connect to {addr}: {e}"))?)
     } else {
-        match Remote::connect(DEFAULT_ADDR) {
+        let token = control_token().unwrap_or_else(|e| {
+            eprintln!("vectorcraft-cli: {e}");
+            None
+        });
+        match Remote::connect_with_token(DEFAULT_ADDR, token) {
             Ok(r) => Box::new(r),
-            Err(_) => Box::new(with_stores(Headless::with_document())),
+            Err(e) => {
+                if e.kind() == std::io::ErrorKind::PermissionDenied {
+                    eprintln!("vectorcraft-cli: the app at {DEFAULT_ADDR} refused the control token ({e}); running headless");
+                }
+                Box::new(with_stores(Headless::with_document()))
+            }
         }
     };
     eprintln!("vectorcraft-cli: MCP server on stdio ({})", backend.describe());
@@ -229,6 +240,14 @@ fn mcp(args: &[String]) -> Result<(), String> {
     let stdin = std::io::stdin();
     // The server reads and writes from threads of its own, so it takes the handles, not locks held here.
     Server::new(backend).serve(std::io::BufReader::new(stdin), std::io::stdout()).map_err(|e| e.to_string())
+}
+
+/// The token a running app's control channel expects: `$VECTORCRAFT_CONTROL_TOKEN`, else the token
+/// file the app wrote (`$VECTORCRAFT_CONTROL_TOKEN_FILE`, else `<settings folder>/control-token`).
+/// `None` when there is neither; the app then refuses the connection.
+fn control_token() -> Result<Option<String>, String> {
+    use vectorcraft_engine::control_token as ct;
+    ct::client_token(ct::token_from_env().as_deref(), ct::token_file_from_env().as_deref())
 }
 
 fn commands() -> Result<(), String> {

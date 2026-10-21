@@ -1,6 +1,6 @@
 # Control protocol
 
-> **Last updated:** 2026-10-13 · **Change:** synthetic input budgets (#1709); bounded transport waits (#1726).
+> **Last updated:** 2026-10-21 · **Change:** every connection authenticates with the control token first.
 
 `vectorcraft --control <port>` listens on `127.0.0.1:<port>` (loopback only). The port must be a number
 from 1 to 65535 (`--control=<port>` works too), given once; otherwise the app prints an error and exits
@@ -23,8 +23,8 @@ nothing sent after it on that connection runs. That covers text that isn't JSON,
 an object without `method`, invalid UTF-8, and a line longer than 4 MiB. An HTTP request (for example a
 web page's cross-origin `fetch` to `127.0.0.1:<port>`) therefore can't smuggle a command in its body:
 its request line is rejected first. At most 16 connections are served at once; further ones get an error
-line and are closed. Clients that get an error reply should reconnect. The port has no authentication,
-so only enable it while you use it. Idle clients have 5 minutes to start their next line; once the
+line and are closed. Clients that get an error reply should reconnect. Every connection must authenticate
+first ([Authentication](#authentication)); still, only enable the port while you use it. Idle clients have 5 minutes to start their next line; once the
 first byte arrives, the complete line must arrive within an absolute 30 seconds (trickled bytes do not
 renew it). A reply has 60 seconds to be written. Expiration closes the connection and returns its slot
 (an idle connection is closed without a line, so nothing waits where the next reply would be; a line
@@ -32,6 +32,30 @@ that stalls gets the usual error line first);
 persistent clients can send further requests within these bounds, or reconnect after idle expiration.
 These transport budgets are separate from the existing 60-second command-processing wait.
 Transport: `apps/vectorcraft/src/control_server.rs`.
+
+## Authentication
+
+Every connection authenticates first. Its first request must be
+
+```text
+→ {"id": "auth", "method": "auth", "params": {"token": "<64 hexadecimal characters>"}}
+← {"id": "auth", "ok": true, "result": {"authenticated": true}}
+```
+
+Any other first line (another method, a missing or wrong token, or a line that is not a request) gets
+`{"ok": false, "error": "authentication required"}` and the connection is closed before anything is
+dispatched. A later `auth` on an authenticated connection gets `"already authenticated"`. Tokens are
+compared without an early exit.
+
+The app takes its token from `$VECTORCRAFT_CONTROL_TOKEN`, or from a token file: `--control-token-file
+<path>`, `$VECTORCRAFT_CONTROL_TOKEN_FILE`, or `<settings folder>/control-token` by default
+(`$VECTORCRAFT_CONFIG_DIR` when set, else the platform's settings folder; a portable copy uses the
+platform folder for its token too). A missing file is created with a new random token, readable by its
+owner only (0600 on Unix); a file others can read is refused, and the app does not start with
+`--control` then. `vectorcraft-cli mcp` (and `--connect`) reads the same variables and file, so one
+user's app and tools agree without setup. These guarantees are tested in
+`apps/vectorcraft/src/control_server.rs` (every method the UI dispatcher answers is refused without
+the token), `crates/engine/src/control_token.rs` and `crates/mcp/src/tests.rs`.
 
 ## Synthetic input budgets
 
@@ -877,6 +901,8 @@ split paths return an error without changing the workspace.
 - [x] Yield after a finite control-request batch per frame; retain later requests and schedule another frame.
 
 ## Transport hardening checklist
+
+- [x] Require the control token as each connection's first frame; refuse and close otherwise.
 
 - [x] Bound idle, partial-line and reply-write waits without renewing a partial-line deadline per byte.
 - [x] Release connection slots on worker exit, including timeout and failed worker creation.

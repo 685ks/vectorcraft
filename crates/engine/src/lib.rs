@@ -7,6 +7,9 @@
 #![forbid(unsafe_code)]
 
 pub mod cmd;
+/// The control channel's shared secret (desktop only: the web build has no control port).
+#[cfg(not(target_arch = "wasm32"))]
+pub mod control_token;
 pub mod file_access;
 pub mod guard;
 pub mod inspect;
@@ -916,7 +919,8 @@ pub struct Prefs {
     pub ui_brightness: String,
     /// User Interface › Accent Color: the colour of what is on, chosen or focused.
     pub ui_accent: String,
-    /// User Interface › Color Scheme: "modern" (with the accent above) or "classic" (neutral
+    /// User Interface › Color Scheme: "house" (the Arthavan Projects colours, the default), "modern"
+    /// (with the accent above) or "classic" (neutral
     /// greys and a blue accent).
     pub ui_color_scheme: String,
     pub canvas_color: String,
@@ -1158,7 +1162,7 @@ impl Default for Prefs {
             scratch_secondary: s("None"),
             ui_brightness: s("mediumDark"),
             ui_accent: s("coral"),
-            ui_color_scheme: s("modern"),
+            ui_color_scheme: s("house"),
             canvas_color: s("matchUi"),
             auto_collapse_icon_panels: false,
             tool_group_labels: false,

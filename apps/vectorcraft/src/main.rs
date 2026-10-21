@@ -13,6 +13,12 @@
 //! `--automation-write-root` (or `VECTORCRAFT_AUTOMATION_READ_ROOT` / `_WRITE_ROOT`) confine the
 //! files its requests read and write (`vectorcraft_engine::file_access`); the person at the
 //! keyboard isn't confined.
+//!
+//! Every control connection must first authenticate with the control token
+//! (`{"method":"auth","params":{"token":"<64 hex>"}}`): `$VECTORCRAFT_CONTROL_TOKEN`, else the token
+//! file (`--control-token-file <path>`, `$VECTORCRAFT_CONTROL_TOKEN_FILE`, default
+//! `<settings folder>/control-token`, created owner-only when missing). `vectorcraft-cli` reads the
+//! same places (`vectorcraft_engine::control_token`, `docs/control-protocol.md`).
 #![cfg_attr(all(target_os = "windows", not(debug_assertions)), windows_subsystem = "windows")]
 
 #[cfg(all(feature = "windows7", any(feature = "wgpu", feature = "accessibility")))]
@@ -556,7 +562,7 @@ fn services(parent: Parent, ui: egui::Context) -> Services {
         // owner that never answers holds a read for up to 4 s. Windows only asks which formats the
         // clipboard holds and macOS asks the pasteboard server, so they check in line.
         clipboard_probe: cfg!(target_os = "linux").then(|| Box::new(clipboard::system_clipboard) as ClipboardProbeFactory),
-        // Help → Discord / website / GitHub, the Discord button, About and Home links.
+        // Help → GitHub / Report an Issue, About and Home links.
         open_url: Some(Box::new(|url: &str| {
             let _ = webbrowser::open(url);
         })),
@@ -600,12 +606,12 @@ fn open_file(path: &str) -> Result<(), String> {
 
 /// The window, Dock, taskbar and app-switcher icon (`assets/app-icon/`, see its README). macOS gets
 /// the version with Apple's transparent margin; elsewhere the full-bleed tile. The app ID matches
-/// `packaging/linux/ai.storyteller.vectorcraft.desktop` so Wayland docks find the launcher icon.
+/// `packaging/linux/app.freedev.ainz.ks.VectorCraft.desktop` so Wayland docks find the launcher icon.
 fn app_icon() -> egui::IconData {
     #[cfg(target_os = "macos")]
     let png: &[u8] = include_bytes!("../../../assets/app-icon/vectorcraft-macos-512.png");
     #[cfg(not(target_os = "macos"))]
-    let png: &[u8] = include_bytes!("../../../assets/app-icon/hicolor/256x256/apps/ai.storyteller.vectorcraft.png");
+    let png: &[u8] = include_bytes!("../../../assets/app-icon/hicolor/256x256/apps/app.freedev.ainz.ks.VectorCraft.png");
     eframe::icon_data::from_png_bytes(png).unwrap_or_default()
 }
 
@@ -650,7 +656,7 @@ fn native_options(custom_titlebar: bool) -> eframe::NativeOptions {
             .with_titlebar_shown(false)
             .with_title_shown(false)
             .with_icon(app_icon())
-            .with_app_id("ai.storyteller.vectorcraft"),
+            .with_app_id("app.freedev.ainz.ks.VectorCraft"),
         #[cfg(feature = "windows7")]
         renderer: eframe::Renderer::Glow,
         ..Default::default()
@@ -666,6 +672,9 @@ Opens the VectorCraft desktop app with the given files.
 Options:
   --control <port>               Start the localhost JSON-lines control server on <port>
                                  (or VECTORCRAFT_CONTROL_PORT)
+  --control-token-file <path>    The control token's file (or VECTORCRAFT_CONTROL_TOKEN_FILE;
+                                 default <settings folder>/control-token, created owner-only);
+                                 VECTORCRAFT_CONTROL_TOKEN gives the token itself
   --automation-read-root <dir>   Confine the files control requests read to <dir>
   --automation-write-root <dir>  Confine the files control requests write to <dir>
   --in-window-menus              Keep the menus inside the window on macOS
@@ -676,6 +685,22 @@ Options:
 Without a window (converting, scripting, the MCP server), use vectorcraft-cli:
   vectorcraft-cli --help
 ";
+
+/// The control server's token: `$VECTORCRAFT_CONTROL_TOKEN`, else the token file
+/// (`--control-token-file`, `$VECTORCRAFT_CONTROL_TOKEN_FILE`, else `<settings folder>/control-token`),
+/// created with a new token when missing.
+fn control_token(file: Option<&std::path::Path>) -> Result<String, String> {
+    use vectorcraft_engine::control_token as ct;
+    let supplied = ct::token_from_env();
+    let file = file.map(std::path::Path::to_path_buf).or_else(ct::token_file_from_env);
+    let token = ct::server_token(supplied.as_deref(), if supplied.is_some() { None } else { file.as_deref() })?;
+    match (&supplied, &file) {
+        (Some(_), _) => log::info!("control channel: token from ${}", ct::TOKEN_ENV),
+        (None, Some(path)) => log::info!("control channel: token in {}", path.display()),
+        (None, None) => log::warn!("control channel: no settings folder for a token file; set ${} to share a token with clients", ct::TOKEN_ENV),
+    }
+    Ok(token)
+}
 
 fn main() -> std::process::ExitCode {
     // Before any thread starts: the pointer must find a cursor theme on Wayland (#2450).
@@ -688,6 +713,7 @@ fn main() -> std::process::ExitCode {
     let mut roots_args =
         automation_args::AutomationArgs::new(root_env("VECTORCRAFT_AUTOMATION_READ_ROOT"), root_env("VECTORCRAFT_AUTOMATION_WRITE_ROOT"));
     let mut files = Vec::new();
+    let mut control_token_file: Option<std::path::PathBuf> = None;
     let mut in_window_menus = std::env::var_os("VECTORCRAFT_IN_WINDOW_MENUS").is_some_and(|v| !v.is_empty() && v != "0");
     let mut args = std::env::args().skip(1);
     while let Some(a) = args.next() {
@@ -701,6 +727,13 @@ fn main() -> std::process::ExitCode {
         }
         match a.as_str() {
             "--in-window-menus" => in_window_menus = true,
+            "--control-token-file" => match args.next().filter(|v| !v.is_empty() && !v.starts_with('-')) {
+                Some(path) => control_token_file = Some(path.into()),
+                None => {
+                    eprintln!("vectorcraft: --control-token-file needs a file");
+                    return std::process::ExitCode::FAILURE;
+                }
+            },
             "--version" => {
                 println!("vectorcraft {}", env!("CARGO_PKG_VERSION"));
                 return std::process::ExitCode::SUCCESS;
@@ -767,6 +800,16 @@ fn main() -> std::process::ExitCode {
                 eprintln!("vectorcraft: {e}");
                 return std::process::ExitCode::FAILURE;
             }
+        }
+    };
+    // A control port without a usable token keeps the app from starting, as a bad root does: an
+    // agent that asked for the port would otherwise wait on one that never opens.
+    let control_token = match control_port.map(|_| control_token(control_token_file.as_deref())).transpose() {
+        Ok(token) => token,
+        Err(e) => {
+            log::error!("{e}");
+            eprintln!("vectorcraft: {e}");
+            return std::process::ExitCode::FAILURE;
         }
     };
     let saved = read_prefs();
@@ -950,8 +993,8 @@ fn main() -> std::process::ExitCode {
                     app.graphics_adapter = Some("OpenGL (Windows 7 compatibility)".into());
                 }
                 app.custom_titlebar = custom_titlebar;
-                if let Some(port) = control_port {
-                    let rx = control_server::start(port, cc.egui_ctx.clone());
+                if let Some((port, token)) = control_port.zip(control_token.clone()) {
+                    let rx = control_server::start(port, token, cc.egui_ctx.clone());
                     app = app.with_control(rx).with_automation_roots(roots.clone());
                     if let Some(roots) = &roots {
                         // Everywhere the app doesn't say whose work it is (worker threads), the
@@ -1092,7 +1135,7 @@ mod tests {
     }
 
     /// The MIME types a Linux desktop gives each extension in `OPEN_EXTS` but `UNASSOCIATED_EXTS`
-    /// (one row per type): shared-mime-info's, or one that `ai.storyteller.vectorcraft.mime.xml`
+    /// (one row per type): shared-mime-info's, or one that `app.freedev.ainz.ks.VectorCraft.mime.xml`
     /// declares.
     const LINUX_TYPES: &[(&str, &str)] = &[
         ("vectorcraft", "application/x-vectorcraft"),
@@ -1152,8 +1195,8 @@ mod tests {
     /// have.
     #[test]
     fn the_linux_desktop_entry_opens_every_readable_format() {
-        let desktop = include_str!("../../../packaging/linux/ai.storyteller.vectorcraft.desktop");
-        let mime = include_str!("../../../packaging/linux/ai.storyteller.vectorcraft.mime.xml");
+        let desktop = include_str!("../../../packaging/linux/app.freedev.ainz.ks.VectorCraft.desktop");
+        let mime = include_str!("../../../packaging/linux/app.freedev.ainz.ks.VectorCraft.mime.xml");
         let listed: Vec<&str> =
             desktop.lines().find_map(|l| l.strip_prefix("MimeType=")).unwrap_or_default().split(';').filter(|t| !t.is_empty()).collect();
         // Each type the MIME package declares, with the extensions of its globs and its `<magic>`

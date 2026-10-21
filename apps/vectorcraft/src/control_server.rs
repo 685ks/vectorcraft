@@ -5,7 +5,11 @@
 //! (an HTTP request line from a browser's cross-origin `fetch`, a stray `nc`, binary junk) gets
 //! one error reply and the connection is closed, so nothing after it is executed. Lines are
 //! bounded ([`MAX_LINE`]) and so is the number of open connections ([`MAX_CONNECTIONS`]); junk
-//! never reaches the UI thread. See `docs/control-protocol.md`.
+//! never reaches the UI thread.
+//!
+//! Every connection must first authenticate: its first request is `auth` with the control token
+//! (`vectorcraft_engine::control_token`). Anything else gets "authentication required" and the
+//! connection is closed, so no other local process can drive the app. See `docs/control-protocol.md`.
 
 use std::io::{BufRead, BufReader, BufWriter, Read, Write};
 use std::net::{TcpListener, TcpStream};
@@ -57,7 +61,7 @@ impl Default for ConnectionTimeouts {
     }
 }
 
-pub fn start(port: u16, ctx: egui::Context) -> Receiver<ControlRequest> {
+pub fn start(port: u16, token: String, ctx: egui::Context) -> Receiver<ControlRequest> {
     let (tx, rx) = channel::<ControlRequest>();
     let listener = match TcpListener::bind(("127.0.0.1", port)) {
         Ok(l) => l,
@@ -67,11 +71,12 @@ pub fn start(port: u16, ctx: egui::Context) -> Receiver<ControlRequest> {
         }
     };
     eprintln!("vectorcraft: control server listening on 127.0.0.1:{port}");
-    std::thread::spawn(move || accept_loop(listener, tx, ctx));
+    let token: Arc<str> = token.into();
+    std::thread::spawn(move || accept_loop(listener, token, tx, ctx));
     rx
 }
 
-fn accept_loop(listener: TcpListener, tx: Sender<ControlRequest>, ctx: egui::Context) {
+fn accept_loop(listener: TcpListener, token: Arc<str>, tx: Sender<ControlRequest>, ctx: egui::Context) {
     let open = Arc::new(AtomicUsize::new(0));
     for stream in listener.incoming().flatten() {
         let Some(slot) = acquire_slot(&open) else {
@@ -82,7 +87,7 @@ fn accept_loop(listener: TcpListener, tx: Sender<ControlRequest>, ctx: egui::Con
             }
             continue;
         };
-        if let Err(e) = spawn_connection(stream, tx.clone(), ctx.clone(), slot, ConnectionTimeouts::default()) {
+        if let Err(e) = spawn_connection(stream, Arc::clone(&token), tx.clone(), ctx.clone(), slot, ConnectionTimeouts::default()) {
             eprintln!("vectorcraft: control worker failed to start: {e}");
         }
     }
@@ -112,6 +117,7 @@ impl Drop for ConnectionSlot {
 
 fn spawn_connection(
     stream: TcpStream,
+    token: Arc<str>,
     tx: Sender<ControlRequest>,
     ctx: egui::Context,
     slot: ConnectionSlot,
@@ -119,7 +125,7 @@ fn spawn_connection(
 ) -> std::io::Result<std::thread::JoinHandle<()>> {
     std::thread::Builder::new().name("vectorcraft-control".into()).spawn(move || {
         let _slot = slot;
-        serve_socket(stream, timeouts, |method, params| {
+        serve_socket(stream, Some(&token), timeouts, |method, params| {
             let (req, rrx) = ControlRequest::new(method, params);
             let ticket = req.ticket();
             tx.send(req).ok()?;
@@ -129,7 +135,7 @@ fn spawn_connection(
     })
 }
 
-fn serve_socket(stream: TcpStream, timeouts: ConnectionTimeouts, handle: impl FnMut(String, Value) -> Option<Value>) {
+fn serve_socket(stream: TcpStream, token: Option<&str>, timeouts: ConnectionTimeouts, handle: impl FnMut(String, Value) -> Option<Value>) {
     let Ok(read) = stream.try_clone() else { return };
     let read = DeadlineReader::new(read, timeouts.idle, timeouts.line);
     // Replies reach the writer in [`REPLY_CHUNK`] pieces ([`write_line`]), so checking the remaining
@@ -138,6 +144,7 @@ fn serve_socket(stream: TcpStream, timeouts: ConnectionTimeouts, handle: impl Fn
     serve_lines_with(
         read,
         out,
+        token,
         handle,
         |reader| {
             let buffered = !reader.buffer().is_empty();
@@ -221,21 +228,26 @@ fn write_line(out: &mut impl Write, v: &Value) -> std::io::Result<()> {
 
 /// Serve requests from `read`, answering on `out`, until the peer closes, sends something that is
 /// not a request, or `handle` returns `None` (app gone). `handle` gets `(method, params)` and
-/// returns the reply object (the request's `id` is added here).
+/// returns the reply object (the request's `id` is added here). With a `token`, the first request
+/// must be `auth` with it ([`vectorcraft_engine::control_token::authenticates`]); until then nothing
+/// reaches `handle`, and any other first frame is refused and the connection closed.
 #[cfg(test)]
 fn serve_lines<R: Read, W: Write>(read: R, out: W, handle: impl FnMut(String, Value) -> Option<Value>) {
-    serve_lines_with(read, out, handle, |_| Ok(()), |_| Ok(()));
+    serve_lines_with(read, out, None, handle, |_| Ok(()), |_| Ok(()));
 }
 
 fn serve_lines_with<R: Read, W: Write>(
     read: R,
     mut out: W,
+    token: Option<&str>,
     mut handle: impl FnMut(String, Value) -> Option<Value>,
     mut begin_line: impl FnMut(&mut BufReader<R>) -> std::io::Result<()>,
     mut begin_reply: impl FnMut(&mut W) -> std::io::Result<()>,
 ) {
+    use vectorcraft_engine::control_token::{AUTH_METHOD, AUTH_REQUIRED, authenticates};
     let mut reader = BufReader::new(read);
     let mut buf = Vec::new();
+    let mut authenticated = token.is_none();
     loop {
         if begin_line(&mut reader).is_err() {
             return;
@@ -248,7 +260,32 @@ fn serve_lines_with<R: Read, W: Write>(
             Err(e) => e,
             Ok(true) => match parse_line(&buf) {
                 Line::Blank => continue,
-                Line::Reject(e) => e,
+                Line::Reject(e) if authenticated => e,
+                // Junk before `auth` is refused like a wrong token: an unauthenticated peer learns nothing.
+                Line::Reject(_) => AUTH_REQUIRED.to_string(),
+                Line::Request { id, method, params } if !authenticated => {
+                    if !token.is_some_and(|t| authenticates(t, &method, &params)) {
+                        let _ = begin_reply(&mut out).and_then(|()| write_line(&mut out, &json!({"id": id, "ok": false, "error": AUTH_REQUIRED})));
+                        return;
+                    }
+                    authenticated = true;
+                    if begin_reply(&mut out)
+                        .and_then(|()| write_line(&mut out, &json!({"id": id, "ok": true, "result": {"authenticated": true}})))
+                        .is_err()
+                    {
+                        return;
+                    }
+                    continue;
+                }
+                Line::Request { id, method, .. } if method == AUTH_METHOD => {
+                    if begin_reply(&mut out)
+                        .and_then(|()| write_line(&mut out, &json!({"id": id, "ok": false, "error": "already authenticated"})))
+                        .is_err()
+                    {
+                        return;
+                    }
+                    continue;
+                }
                 Line::Request { id, method, params } => {
                     let Some(mut r) = handle(method, params) else { return };
                     if let Some(o) = r.as_object_mut() {
@@ -285,7 +322,7 @@ mod tests {
         let worker = std::thread::spawn(move || {
             let (stream, _) = listener.accept().unwrap();
             socket2::SockRef::from(&stream).set_send_buffer_size(4096).unwrap();
-            serve_socket(stream, timeouts, handle);
+            serve_socket(stream, None, timeouts, handle);
             finished.send(()).unwrap();
         });
         let client = TcpStream::connect(addr).unwrap();
@@ -416,7 +453,7 @@ mod tests {
         let client = TcpStream::connect(listener.local_addr().unwrap()).unwrap();
         let (stream, _) = listener.accept().unwrap();
         let (tx, _rx) = channel();
-        let worker = spawn_connection(stream, tx, egui::Context::default(), slot, short_timeouts()).unwrap();
+        let worker = spawn_connection(stream, Arc::from(TOKEN), tx, egui::Context::default(), slot, short_timeouts()).unwrap();
         let start = std::time::Instant::now();
         while open.load(Ordering::SeqCst) == MAX_CONNECTIONS && start.elapsed() < Duration::from_secs(3) {
             std::thread::sleep(Duration::from_millis(10));
@@ -632,7 +669,7 @@ mod tests {
         let listener = TcpListener::bind(("127.0.0.1", 0)).unwrap();
         let addr = listener.local_addr().unwrap();
         let (tx, _rx) = channel::<ControlRequest>();
-        std::thread::spawn(move || accept_loop(listener, tx, egui::Context::default()));
+        std::thread::spawn(move || accept_loop(listener, Arc::from(TOKEN), tx, egui::Context::default()));
         // Idle connections are accepted in order and held open.
         let held: Vec<TcpStream> = (0..16).map(|_| TcpStream::connect(addr).unwrap()).collect();
         let mut extra = TcpStream::connect(addr).unwrap();
@@ -641,5 +678,127 @@ mod tests {
         BufReader::new(&mut extra).read_line(&mut line).unwrap();
         assert!(line.contains("too many control connections"), "{line}");
         drop(held);
+    }
+
+    const TOKEN: &str = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
+
+    fn run_with_token(input: &[u8]) -> (Vec<Value>, Vec<String>) {
+        let mut out = Vec::new();
+        let mut calls = Vec::new();
+        serve_lines_with(
+            input,
+            &mut out,
+            Some(TOKEN),
+            |m, _p| {
+                calls.push(m);
+                Some(json!({"ok": true, "result": null}))
+            },
+            |_| Ok(()),
+            |_| Ok(()),
+        );
+        let replies = String::from_utf8(out).unwrap().lines().map(|l| serde_json::from_str::<Value>(l).unwrap()).collect();
+        (replies, calls)
+    }
+
+    /// Every method the UI dispatcher answers, read from the `match` arms of
+    /// `crates/ui-egui/src/control.rs`, so a new route is covered by the auth test below.
+    fn every_route() -> Vec<String> {
+        let source = include_str!("../../../crates/ui-egui/src/control.rs");
+        let mut routes = std::collections::BTreeSet::new();
+        for line in source.lines() {
+            let Some(arm) = line.trim_start().strip_prefix('"') else { continue };
+            let Some((patterns, _)) = arm.split_once(" =>") else { continue };
+            let patterns = patterns.split(" if ").next().unwrap_or("");
+            for pattern in format!("\"{patterns}").split('|') {
+                let name = pattern.trim().trim_matches('"');
+                if name.contains('.') && name.chars().all(|c| c.is_ascii_alphanumeric() || c == '.') {
+                    routes.insert(name.to_string());
+                }
+            }
+        }
+        routes.into_iter().collect()
+    }
+
+    #[test]
+    fn the_route_list_covers_the_documented_methods() {
+        let routes = every_route();
+        for documented in ["engine.commands", "document.inspect", "ui.inspect", "ui.screenshot", "ui.key"] {
+            assert!(routes.iter().any(|r| r == documented), "{documented} not found in {routes:?}");
+        }
+    }
+
+    /// The first frame of an unauthenticated connection is a route itself, with no token, the
+    /// right token in the wrong frame, or a wrong token: "authentication required", the connection
+    /// is closed, and nothing is dispatched.
+    #[test]
+    fn every_route_requires_the_token() {
+        let wrong = "f".repeat(64);
+        for route in every_route() {
+            for params in [json!({}), json!({"token": TOKEN}), json!({"token": wrong})] {
+                let input = format!("{}\n{}\n", json!({"id": 1, "method": route, "params": params}), json!({"id": 2, "method": route}));
+                let (r, calls) = run_with_token(input.as_bytes());
+                assert!(calls.is_empty(), "{route} was dispatched without authentication");
+                assert_eq!(r.len(), 1, "{route}: the connection stays open after a failed auth");
+                assert_eq!(r[0]["ok"], false, "{route}");
+                assert_eq!(r[0]["error"], "authentication required", "{route}");
+            }
+        }
+    }
+
+    #[test]
+    fn a_wrong_token_is_refused_and_the_connection_closed() {
+        for wrong in
+            ["f".repeat(64), format!("{}0", &TOKEN[..63]), format!("1{}", &TOKEN[1..]), TOKEN[..63].to_string(), format!("{TOKEN}0"), String::new()]
+        {
+            let input = format!("{}\n{}\n", json!({"id": 1, "method": "auth", "params": {"token": wrong}}), json!({"id": 2, "method": "ui.inspect"}));
+            let (r, calls) = run_with_token(input.as_bytes());
+            assert!(calls.is_empty(), "{wrong:?}: dispatched");
+            assert_eq!(r.len(), 1, "{wrong:?}");
+            assert_eq!(r[0]["error"], "authentication required", "{wrong:?}");
+        }
+    }
+
+    /// Junk before `auth` gets the same refusal as a wrong token, not the parser's details.
+    #[test]
+    fn junk_before_auth_is_refused_like_a_wrong_token() {
+        let (r, calls) = run_with_token(b"GET / HTTP/1.1\n{\"id\":2,\"method\":\"ui.inspect\"}\n");
+        assert!(calls.is_empty());
+        assert_eq!(r.len(), 1);
+        assert_eq!(r[0]["error"], "authentication required");
+    }
+
+    #[test]
+    fn the_right_token_opens_the_connection_once() {
+        let input = format!(
+            "{}\n{}\n{}\n",
+            json!({"id": "auth", "method": "auth", "params": {"token": TOKEN}}),
+            json!({"id": 2, "method": "ui.inspect"}),
+            json!({"id": 3, "method": "auth", "params": {"token": TOKEN}}),
+        );
+        let (r, calls) = run_with_token(input.as_bytes());
+        assert_eq!(calls, ["ui.inspect"]);
+        assert_eq!(r.len(), 3);
+        assert_eq!((r[0]["id"].as_str(), r[0]["ok"].as_bool()), (Some("auth"), Some(true)));
+        assert_eq!(r[1]["id"], 2);
+        assert_eq!(r[2]["error"], "already authenticated");
+    }
+
+    /// End to end over a real socket and the app's connection worker: a request before `auth` is
+    /// refused and never reaches the app.
+    #[test]
+    fn tcp_requires_auth_before_anything_runs() {
+        let listener = TcpListener::bind(("127.0.0.1", 0)).unwrap();
+        let mut c = TcpStream::connect(listener.local_addr().unwrap()).unwrap();
+        let (stream, _) = listener.accept().unwrap();
+        let (tx, rx) = channel::<ControlRequest>();
+        let slot = acquire_slot(&Arc::new(AtomicUsize::new(0))).unwrap();
+        let worker = spawn_connection(stream, Arc::from(TOKEN), tx, egui::Context::default(), slot, ConnectionTimeouts::default()).unwrap();
+        c.set_read_timeout(Some(Duration::from_secs(10))).unwrap();
+        c.write_all(b"{\"id\":1,\"method\":\"engine.commands\"}\n").unwrap();
+        let mut text = String::new();
+        c.read_to_string(&mut text).unwrap(); // EOF: the server closed the connection
+        worker.join().unwrap();
+        assert!(text.contains("authentication required"), "{text}");
+        assert!(rx.try_recv().is_err(), "nothing reached the app");
     }
 }

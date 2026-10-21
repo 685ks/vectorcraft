@@ -20,6 +20,9 @@ pub trait Backend {
 /// A running VectorCraft app, reached through its loopback control port.
 pub struct Remote {
     addr: String,
+    /// The control token sent as each connection's first frame (`auth`); `None` sends none, which
+    /// the app refuses.
+    token: Option<String>,
     conn: Option<(BufReader<TcpStream>, TcpStream)>,
     next_id: u64,
 }
@@ -33,7 +36,13 @@ const MAX_REPLY_BYTES: usize = 256 * 1024 * 1024;
 impl Remote {
     /// Connect to `addr` (e.g. `127.0.0.1:7979`), failing fast when nothing is listening.
     pub fn connect(addr: &str) -> std::io::Result<Self> {
-        let mut r = Self { addr: addr.to_string(), conn: None, next_id: 1 };
+        Self::connect_with_token(addr, None)
+    }
+
+    /// [`Remote::connect`], authenticating every connection with `token`
+    /// (`vectorcraft_engine::control_token`). A refused token fails with `PermissionDenied`.
+    pub fn connect_with_token(addr: &str, token: Option<String>) -> std::io::Result<Self> {
+        let mut r = Self { addr: addr.to_string(), token, conn: None, next_id: 1 };
         r.reconnect()?;
         Ok(r)
     }
@@ -56,8 +65,12 @@ impl Remote {
                     s.set_nodelay(true).ok();
                     // The app answers within 60 s (its own timeout); leave headroom.
                     s.set_read_timeout(Some(Duration::from_secs(90))).ok();
-                    let read = s.try_clone()?;
-                    self.conn = Some((BufReader::new(read), s));
+                    let mut reader = BufReader::new(s.try_clone()?);
+                    let mut writer = s;
+                    if let Some(token) = &self.token {
+                        authenticate(&mut reader, &mut writer, token)?;
+                    }
+                    self.conn = Some((reader, writer));
                     return Ok(());
                 }
                 Err(e) => last = e,
@@ -140,6 +153,25 @@ impl Remote {
         }
         String::from_utf8(buf).map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))
     }
+}
+
+/// Send the `auth` frame and read its reply; a refusal is `PermissionDenied`.
+fn authenticate(reader: &mut BufReader<TcpStream>, writer: &mut TcpStream, token: &str) -> std::io::Result<()> {
+    let frame = vectorcraft_engine::control_token::auth_request(token);
+    writer.write_all(frame.to_string().as_bytes())?;
+    writer.write_all(b"\n")?;
+    writer.flush()?;
+    let mut buf = Vec::new();
+    if !crate::server::read_line_capped(reader, &mut buf, 64 * 1024)? {
+        return Err(std::io::Error::new(std::io::ErrorKind::UnexpectedEof, "control channel closed during authentication"));
+    }
+    let reply: Value =
+        serde_json::from_slice(&buf).map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, format!("bad auth reply: {e}")))?;
+    if reply.get("ok").and_then(Value::as_bool) == Some(true) {
+        return Ok(());
+    }
+    let why = reply.get("error").and_then(Value::as_str).unwrap_or("authentication failed");
+    Err(std::io::Error::new(std::io::ErrorKind::PermissionDenied, format!("control token refused: {why}")))
 }
 
 impl Backend for Remote {
