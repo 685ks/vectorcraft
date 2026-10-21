@@ -85,20 +85,22 @@ impl Accent {
     }
 }
 
-/// User Interface › Color Scheme: Modern (the default: slate greys and the chosen accent) or
-/// Classic (the neutral greys and blue accent of earlier versions). Both keep the same layout,
-/// cards and corners; only the colours differ.
+/// User Interface › Color Scheme: Arthavan (the default: the house colours from `craft-tokens`),
+/// Modern (slate greys and the chosen accent) or Classic (the neutral greys and blue accent of
+/// earlier versions). All keep the same layout, cards and corners; only the colours differ.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum Scheme {
     #[default]
+    House,
     Modern,
     Classic,
 }
 
 impl Scheme {
-    pub const ALL: [Scheme; 2] = [Scheme::Modern, Scheme::Classic];
+    pub const ALL: [Scheme; 3] = [Scheme::House, Scheme::Modern, Scheme::Classic];
     pub fn id(self) -> &'static str {
         match self {
+            Scheme::House => "house",
             Scheme::Modern => "modern",
             Scheme::Classic => "classic",
         }
@@ -418,9 +420,59 @@ impl Tokens {
         }
     }
 
-    /// The tokens for `b` in `scheme`; Modern takes `accent`, Classic has its own blue.
+    /// The house scheme at brightness `b`: the Arthavan Projects colours of `craft-tokens` (a
+    /// near-black blue sheet, cool ink and a pale steel-blue accent) at the two dark levels; the
+    /// light levels, which the house palette doesn't define, are Modern's with the blue accent.
+    pub fn house(b: Brightness) -> Self {
+        use craft_tokens::{Rgba, color};
+        if !matches!(b, Brightness::Dark | Brightness::MediumDark) {
+            return Self::for_brightness(b).with_accent(Accent::Blue);
+        }
+        let c = |x: Rgba| Color32::from_rgba_unmultiplied(x.r, x.g, x.b, x.a);
+        let white = |alpha: f32, under: Rgba| Rgba::rgb(255, 255, 255).with_alpha(alpha).over(under);
+        let bg = color::BG_BASE;
+        let sheet = color::BG_SHEET;
+        // Medium Dark lifts the cards a step off the sheet; Dark keeps them on it.
+        let panel = if b == Brightness::MediumDark { white(0.035, color::SURFACE_PANEL.over(sheet)) } else { color::SURFACE_PANEL.over(sheet) };
+        Tokens {
+            dark: true,
+            app_bar: c(bg),
+            panel: c(panel),
+            panel_darker: c(sheet),
+            input: c(bg),
+            input_border: c(color::BORDER_LINE.over(panel)),
+            border: c(color::BG_SKY_TOP),
+            divider: c(color::BORDER_LINE_SOFT.over(panel)),
+            text: c(color::TEXT_STRONG),
+            text_dim: c(color::TEXT_MUTED),
+            text_disabled: c(color::TEXT_FAINT),
+            icon: c(color::TEXT_STRONG),
+            hover: c(color::SURFACE_FILL_FOCUS.over(panel)),
+            tool_active: c(color::ACCENT_BASE.with_alpha(0.22).over(panel)),
+            accent: c(color::ACCENT_BASE),
+            // Filled buttons, checks and radio dots carry white: a deeper blue than the accent.
+            accent_strong: c(color::TIER_BLUE),
+            row_selected: c(color::ACCENT_BASE.with_alpha(0.2).over(panel)),
+            // The artboard's surround is the page background (`--bg`).
+            pasteboard: c(bg),
+            ruler: c(sheet),
+            ruler_tick: c(color::TEXT_FAINT),
+            measure_bg: c(color::SURFACE_GLASS),
+            button: c(color::SURFACE_FILL_2.over(panel)),
+            text_strong: c(color::TEXT_INK),
+            tab_strip: c(sheet),
+            button_border: c(white(0.2, panel)),
+            flyout_active: c(color::ACCENT_BRIGHT),
+            error: c(color::STATUS_ERROR),
+            warning: c(color::STATUS_WARN),
+            ..Self::for_brightness(Brightness::Dark)
+        }
+    }
+
+    /// The tokens for `b` in `scheme`; Modern takes `accent`, House and Classic have their own.
     pub fn for_scheme(scheme: Scheme, b: Brightness, accent: Accent) -> Self {
         match scheme {
+            Scheme::House => Self::house(b),
             Scheme::Modern => Self::for_brightness(b).with_accent(accent),
             Scheme::Classic => Self::classic(b),
         }
@@ -447,7 +499,8 @@ impl Tokens {
     }
 
     pub fn get(ctx: &egui::Context) -> Tokens {
-        ctx.data(|d| d.get_temp::<Tokens>(egui::Id::NULL)).unwrap_or_else(|| Tokens::for_brightness(Brightness::default()))
+        ctx.data(|d| d.get_temp::<Tokens>(egui::Id::NULL))
+            .unwrap_or_else(|| Tokens::for_scheme(Scheme::default(), Brightness::default(), Accent::default()))
     }
     pub fn cr(&self) -> CornerRadius {
         CornerRadius::same(self.radius)
@@ -569,6 +622,16 @@ pub fn apply_with(ctx: &egui::Context, b: Brightness, accent: Accent, scheme: Sc
     v.override_text_color = Some(t.text);
     v.popup_shadow = egui::epaint::Shadow { offset: [0, 4], blur: 14, spread: 0, color: Color32::from_black_alpha(if t.dark { 120 } else { 60 }) };
     v.window_shadow = egui::epaint::Shadow { offset: [0, 8], blur: 28, spread: 0, color: Color32::from_black_alpha(if t.dark { 140 } else { 70 }) };
+    if scheme == Scheme::House && t.dark {
+        // `--shadow-panel` (0 24 60 -24, black 70%) for floating windows; egui has no negative spread.
+        let s = craft_tokens::shadow::PANEL;
+        v.window_shadow = egui::epaint::Shadow {
+            offset: [0, 24],
+            blur: 60,
+            spread: 0,
+            color: Color32::from_rgba_unmultiplied(s.color.r, s.color.g, s.color.b, s.color.a),
+        };
+    }
     let w = &mut v.widgets;
     craft_ui::theme::WidgetPalette { noninteractive: t.panel, inactive: t.button, hovered: t.hover, active: t.tool_active, open: t.hover }.apply_to(
         w,
@@ -621,6 +684,25 @@ mod tests {
                 let gap = (i32::from(t.button_border.r()) - i32::from(t.panel.r())).abs();
                 assert!(gap >= 24, "{scheme:?} {b:?}: rail {:?} on panel {:?}", t.button_border, t.panel);
             }
+        }
+    }
+
+    /// New installs get the house colours from craft-tokens; the dark levels use its accent and
+    /// sheet, and every level keeps Modern's corners.
+    #[test]
+    fn house_scheme_is_the_default_and_uses_craft_tokens() {
+        assert_eq!(Scheme::default(), Scheme::House);
+        assert_eq!(Scheme::parse("house"), Some(Scheme::House));
+        let a = craft_tokens::color::ACCENT_BASE;
+        for b in [Brightness::Dark, Brightness::MediumDark] {
+            let t = Tokens::for_scheme(Scheme::House, b, Accent::Pink);
+            assert!(t.dark);
+            assert_eq!(t.accent, Color32::from_rgb(a.r, a.g, a.b), "{b:?}: the accent ignores the Accent Color pref");
+            assert_ne!(t.app_bar, t.panel, "{b:?}: the cards need a frame");
+        }
+        for b in Brightness::ALL {
+            assert_eq!(Tokens::house(b).radius, Tokens::for_brightness(b).radius);
+            assert_eq!(Tokens::house(b).dark, Tokens::for_brightness(b).dark, "{b:?}");
         }
     }
 

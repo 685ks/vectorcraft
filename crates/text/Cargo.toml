@@ -45,6 +45,9 @@ test-fonts = ["dep:write-fonts"]
 [dev-dependencies]
 write-fonts = "0.48"
 
+[build-dependencies]
+craft-fonts-build = { workspace = true }
+
 # Fonts registered with Windows outside its font folders ("install as shortcut", installers);
 # MIT OR Apache-2.0, a safe wrapper of the registry API from the windows-rs project.
 [target.'cfg(windows)'.dependencies]

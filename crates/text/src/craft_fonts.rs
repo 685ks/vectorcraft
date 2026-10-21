@@ -28,6 +28,7 @@ pub struct WebFont {
     pub integrity: &'static str,
 }
 
+include!(concat!(env!("OUT_DIR"), "/craft_fonts_embed.rs"));
 include!(concat!(env!("OUT_DIR"), "/craft_fonts.rs"));
 
 impl CraftFont {
