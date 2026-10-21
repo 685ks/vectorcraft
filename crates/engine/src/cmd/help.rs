@@ -1,33 +1,32 @@
-//! Help → community and project links (the ArtCraft Discord, website, this app's page and its
-//! GitHub repository). The commands return the URL; the frontend opens it.
+//! Help → project links (this fork's GitHub repository and its issue tracker). The commands
+//! return the URL; the frontend opens it. This build is Arthavan Projects' fork of
+//! storytold/vectorcraft, not affiliated with or endorsed by ArtCraft.
 
 use serde_json::{Value, json};
 
 use super::*;
 
-/// The app's id on getartcraft.com and GitHub.
+/// The app's id on GitHub.
 pub const APP_ID: &str = "vectorcraft";
-pub const DISCORD_URL: &str = "https://discord.gg/artcraft";
-pub const WEBSITE_URL: &str = "https://getartcraft.com";
-
-/// This app's page on the website.
-pub fn app_page_url() -> String {
-    format!("{WEBSITE_URL}/apps/{APP_ID}")
-}
+/// The project this build is a fork of.
+pub const UPSTREAM_URL: &str = "https://github.com/storytold/vectorcraft";
 
 /// This app's source repository.
 pub fn github_url() -> String {
-    format!("https://github.com/storytold/{APP_ID}")
+    format!("https://github.com/685ks/{APP_ID}")
+}
+
+/// Where bug reports go.
+pub fn issues_url() -> String {
+    format!("{}/issues", github_url())
 }
 
 pub fn specs() -> Vec<CommandSpec> {
     vec![
-        cmd!(query "help.discord", "Join Our Discord", ["Help"], None, "{} → {url} the ArtCraft community Discord", always, |_, _| url(DISCORD_URL.into())),
-        cmd!(query "help.website", "ArtCraft Website", ["Help"], None, "{} → {url}", always, |_, _| url(WEBSITE_URL.into())),
-        cmd!(query "help.appPage", "VectorCraft on getartcraft.com", ["Help"], None, "{} → {url} this app's page", always, |_, _| url(app_page_url())),
         cmd!(query "help.github", "VectorCraft on GitHub", ["Help"], None, "{} → {url} source code, issues and releases", always, |_, _| url(github_url())),
-        cmd!(query "help.links", "Links", [], None, "{} → {discord, website, appPage, github}", always, |_, _| {
-            Ok(json!({ "discord": DISCORD_URL, "website": WEBSITE_URL, "appPage": app_page_url(), "github": github_url() }))
+        cmd!(query "help.reportIssue", "Report an Issue…", ["Help"], None, "{} → {url} the issue tracker", always, |_, _| url(issues_url())),
+        cmd!(query "help.links", "Links", [], None, "{} → {github, issues, upstream}", always, |_, _| {
+            Ok(json!({ "github": github_url(), "issues": issues_url(), "upstream": UPSTREAM_URL }))
         }),
     ]
 }
@@ -43,9 +42,11 @@ mod tests {
     #[test]
     fn links() {
         let mut s = Session::new();
-        assert_eq!(s.execute("help.discord", &json!({})).unwrap()["url"], "https://discord.gg/artcraft");
-        assert_eq!(s.execute("help.appPage", &json!({})).unwrap()["url"], "https://getartcraft.com/apps/vectorcraft");
-        assert_eq!(s.execute("help.github", &json!({})).unwrap()["url"], "https://github.com/storytold/vectorcraft");
-        assert_eq!(s.execute("help.links", &json!({})).unwrap()["website"], "https://getartcraft.com");
+        assert_eq!(s.execute("help.github", &json!({})).unwrap()["url"], "https://github.com/685ks/vectorcraft");
+        assert_eq!(s.execute("help.reportIssue", &json!({})).unwrap()["url"], "https://github.com/685ks/vectorcraft/issues");
+        assert_eq!(s.execute("help.links", &json!({})).unwrap()["upstream"], "https://github.com/storytold/vectorcraft");
+        for gone in ["help.discord", "help.website", "help.appPage"] {
+            assert!(s.execute(gone, &json!({})).is_err(), "{gone} is an ArtCraft link");
+        }
     }
 }

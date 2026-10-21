@@ -18,13 +18,13 @@
      xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
   <Package
       Name="VectorCraft"
-      Manufacturer="Learning Machines LLC"
+      Manufacturer="Arthavan Projects"
       Version="$(var.Version)"
-      UpgradeCode="601C6437-08AE-4645-ADCC-27F036C2EA2F"
+      UpgradeCode="51F8C24D-520F-49BA-B131-8A7DEAF62198"
       Scope="perMachine"
       Compressed="yes"
       Language="1033">
-    <SummaryInformation Description="VectorCraft vector illustration app" Manufacturer="Learning Machines LLC" />
+    <SummaryInformation Description="VectorCraft vector illustration app" Manufacturer="Arthavan Projects" />
     <!-- Same-version upgrades let successive pre-releases of one X.Y.Z replace each other
          (MSI versions are numeric, so 1.2.3-rc.1 and 1.2.3-rc.2 are both 1.2.3). -->
     <MajorUpgrade AllowSameVersionUpgrades="yes"
@@ -33,9 +33,9 @@
 
     <Icon Id="VectorcraftIcon.ico" SourceFile="$(var.IconPath)" />
     <Property Id="ARPPRODUCTICON" Value="VectorcraftIcon.ico" />
-    <Property Id="ARPURLINFOABOUT" Value="https://getartcraft.com/apps/vectorcraft" />
-    <Property Id="ARPURLUPDATEINFO" Value="https://getartcraft.com/apps/vectorcraft" />
-    <Property Id="ARPHELPLINK" Value="https://discord.gg/artcraft" />
+    <Property Id="ARPURLINFOABOUT" Value="https://github.com/685ks/vectorcraft" />
+    <Property Id="ARPURLUPDATEINFO" Value="https://github.com/685ks/vectorcraft/releases" />
+    <Property Id="ARPHELPLINK" Value="https://github.com/685ks/vectorcraft/issues" />
 
     <StandardDirectory Id="ProgramFiles6432Folder">
       <Directory Id="INSTALLFOLDER" Name="VectorCraft" />

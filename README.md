@@ -1,14 +1,8 @@
-<p align="center">
-  <a href="https://getartcraft.com/">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="docs/brand/artcraft-logo-white.svg">
-      <img alt="ArtCraft" src="docs/brand/artcraft-logo.svg" width="200">
-    </picture>
-  </a>
-</p>
-
-
 <h1 align="center">VectorCraft</h1>
+
+<p align="center">
+  <i>A fork of <a href="https://github.com/storytold/vectorcraft">storytold/vectorcraft</a>, maintained by Arthavan Projects. Not affiliated with or endorsed by ArtCraft.</i>
+</p>
 
 <p align="center">
   <b>Vector illustration; an open-source, modern vector art application, built in pure Rust.</b>
@@ -16,7 +10,7 @@
 
 <p align="center">
   A fast, open-source vector illustration workflow. It runs natively on
-  macOS, Windows, Linux and FreeBSD, and in the browser via WebAssembly. Built by the ArtCraft team.
+  macOS, Windows, Linux and FreeBSD, and in the browser via WebAssembly.
 </p>
 
 <p align="center">
@@ -25,19 +19,6 @@
   <img alt="Runs on macOS, Windows, Linux, FreeBSD and the web" src="https://img.shields.io/badge/runs%20on-macOS%20%C2%B7%20Windows%20%C2%B7%20Linux%20%C2%B7%20FreeBSD%20%C2%B7%20Web-555555?style=flat-square">
   <img alt="MCP server for agents" src="https://img.shields.io/badge/agents-MCP%20server-555555?style=flat-square">
   <img alt="License: MIT OR Apache-2.0" src="https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-555555?style=flat-square">
-  <br>
-  <a href="https://sonarcloud.io/project/overview?id=storytold_vectorcraft"><img alt="Scanned by SonarCloud" src="https://img.shields.io/badge/Scanned_by-SonarCloud-4b9fd5?style=flat-square&logo=sonarqubecloud&logoColor=white"></a>
-  <a href="https://coderabbit.ai"><img alt="Reviewed by CodeRabbit" src="https://img.shields.io/coderabbit/prs/github/storytold/vectorcraft?style=flat-square&label=Reviewed%20by%20CodeRabbit&logo=coderabbit"></a>
-</p>
-
-<p align="center">
-  <a href="https://discord.gg/artcraft"><img alt="Join the ArtCraft community on Discord" src="https://img.shields.io/badge/Join%20us%20on%20Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" height="40"></a>
-</p>
-
-<p align="center">
-  <a href="https://getartcraft.com/apps/vectorcraft"><b>VectorCraft on getartcraft.com</b></a> ·
-  <a href="https://getartcraft.com/">ArtCraft</a> ·
-  <a href="https://getartcraft.com/apps">All Crafting Apps</a>
 </p>
 
 <br>
@@ -47,10 +28,6 @@
   <br><sub><b>Neon Drive</b>: a Pathfinder-cut sun, live Outer Glow on the type and grid, and clipping masks · <code>examples/neon-drive.vectorcraft</code></sub>
 </p>
 
-> [!NOTE]
-> **ArtCraft is a community of artists from all walks of life.** Digital, generative, music,
-> games &mdash; if you make things, you're one of us. **[Come say hi on Discord](https://discord.gg/artcraft).**
-
 <p align="center">
   <a href="#a-look-around">A look around</a> ·
   <a href="#made-in-vectorcraft">Made in VectorCraft</a> ·
@@ -58,7 +35,6 @@
   <a href="#quick-start">Quick start</a> ·
   <a href="#status">Status</a> ·
   <a href="#downloads">Downloads</a> ·
-  <a href="#the-crafting-apps">The Crafting Apps</a> ·
   <a href="#license-and-credits">License</a>
 </p>
 
@@ -169,7 +145,7 @@ exposes to agents, and exported by VectorCraft's own renderer. The source files 
 For posters and sewing patterns, see [Print a large poster across multiple pages](docs/print-tiling.md).
 
 ```sh
-git clone https://github.com/storytold/vectorcraft
+git clone https://github.com/685ks/vectorcraft
 cd vectorcraft
 
 cargo run --release -p vectorcraft                          # desktop app
@@ -185,7 +161,7 @@ cargo xtask ci                                            # fmt, clippy, tests, 
 
 For text and custom letter shapes, see [Typography and Custom Lettering](docs/typography-lettering.md).
 
-Japanese fonts come from [storytold/craft-fonts](https://github.com/storytold/craft-fonts), an optional
+Japanese fonts come from [craft-fonts](https://github.com/685ks/craft-fonts), an optional
 build input (releases always use it): `CRAFT_FONTS_DIR="$PWD/../craft-fonts" cargo run --release -p vectorcraft` (an absolute path).
 Without it, Japanese text uses the installed system fonts. See [`docs/development.md`](docs/development.md#fonts-craft-fonts-optional-build-input).
 
@@ -273,9 +249,9 @@ signed and published. Every bundled asset is listed with its licence in [`ASSETS
 
 ## Downloads
 
-**New to VectorCraft?** Download it from the [VectorCraft page on getartcraft.com](https://getartcraft.com/apps/vectorcraft). That's the easiest way to install it.
+**New to VectorCraft?** Install it with the Arthavan Projects launcher, which keeps it up to date.
 
-**Want a specific build or format?** On GitHub, the [latest release](https://github.com/storytold/vectorcraft/releases/latest) has every build listed below, and [all releases](https://github.com/storytold/vectorcraft/releases) has earlier versions and their notes. `<ver>` in the file names is the version number, and `SHA256SUMS.txt` lists a checksum for every file.
+**Want a specific build or format?** On GitHub, the [latest release](https://github.com/685ks/vectorcraft/releases/latest) has every build listed below, and [all releases](https://github.com/685ks/vectorcraft/releases) has earlier versions and their notes. `<ver>` in the file names is the version number, and `SHA256SUMS.txt` lists a checksum for every file.
 
 ### Windows
 
@@ -316,49 +292,9 @@ Installers and executables are code-signed.
 |---|---|---|
 | Static site | `vectorcraft-web-<ver>.zip` | Runs in a modern browser; host it on any static server |
 
-## The Crafting Apps
-
-VectorCraft is one of the **Crafting Apps**: free, open-source creative tools from the
-[ArtCraft](https://getartcraft.com/) team, each written from scratch in Rust and each able to
-stand on its own.
-
-| | App | What it's for | Code | Learn more |
-|:-:|---|---|---|---|
-| <img src="https://raw.githubusercontent.com/storytold/photocraft/main/assets/app-icon/hicolor/64x64/apps/ai.storyteller.photocraft.png" alt="" width="32" height="32"> | **PhotoCraft** | Image editing: layers, masks, type and real PSD files | [GitHub](https://github.com/storytold/photocraft) | [Website](https://getartcraft.com/apps/photocraft) |
-| <img src="https://raw.githubusercontent.com/storytold/vectorcraft/main/assets/app-icon/hicolor/64x64/apps/ai.storyteller.vectorcraft.png" alt="" width="32" height="32"> | **VectorCraft** | **Vector illustration · you are here** | [GitHub](https://github.com/storytold/vectorcraft) | [Website](https://getartcraft.com/apps/vectorcraft) |
-| <img src="https://raw.githubusercontent.com/storytold/filmcraft/main/assets/app-icon/hicolor/64x64/apps/ai.storyteller.filmcraft.png" alt="" width="32" height="32"> | **FilmCraft** | Video editing, color and sound | [GitHub](https://github.com/storytold/filmcraft) | [Website](https://getartcraft.com/apps/filmcraft) |
-| <img src="https://raw.githubusercontent.com/storytold/lightcraft/main/assets/app-icon/hicolor/64x64/apps/ai.storyteller.lightcraft.png" alt="" width="32" height="32"> | **LightCraft** | Photo library and raw development | [GitHub](https://github.com/storytold/lightcraft) | [Website](https://getartcraft.com/apps/lightcraft) |
-| <img src="https://raw.githubusercontent.com/storytold/pdfcraft/main/assets/app-icon/hicolor/64x64/apps/ai.storyteller.pdfcraft.png" alt="" width="32" height="32"> | **PdfCraft** | Reading, organizing and protecting PDFs | [GitHub](https://github.com/storytold/pdfcraft) | [Website](https://getartcraft.com/apps/pdfcraft) |
-| <img src="https://raw.githubusercontent.com/storytold/effectcraft/main/assets/app-icon/hicolor/64x64/apps/ai.storyteller.effectcraft.png" alt="" width="32" height="32"> | **EffectCraft** | Motion graphics and visual effects | [GitHub](https://github.com/storytold/effectcraft) | [Website](https://getartcraft.com/apps/effectcraft) |
-| <img src="https://raw.githubusercontent.com/storytold/designcraft/main/assets/app-icon/hicolor/64x64/apps/ai.storyteller.designcraft.png" alt="" width="32" height="32"> | **DesignCraft** | Page layout and publishing | [GitHub](https://github.com/storytold/designcraft) | [Website](https://getartcraft.com/apps/designcraft) |
-
-And [**ArtCraft**](https://getartcraft.com/) itself, our AI image and video studio for artists who want real control.
-
-<br>
-
-<p align="center">
-  <a href="https://discord.gg/artcraft"><img alt="Join the ArtCraft community on Discord" src="https://img.shields.io/badge/Join%20us%20on%20Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" height="40"></a>
-</p>
-
-<h3 align="center">Come make things with us</h3>
-
-<p align="center">
-  Our Discord is where artists of every kind hang out: people who paint, shoot, draw, cut film,
-  set type, and people still figuring out what they like to make. Share what you're working on,
-  ask for help, tell us what's broken, or tell us what you wish these tools could do.
-  Whatever your medium and however long you've been at it, you're welcome here.
-</p>
-
-<p align="center">
-  <a href="https://discord.gg/artcraft"><b>discord.gg/artcraft</b></a> ·
-  <a href="https://getartcraft.com/">getartcraft.com</a> ·
-  <a href="https://getartcraft.com/apps">The Crafting Apps</a> ·
-  <a href="https://getartcraft.com/apps/vectorcraft">VectorCraft</a>
-</p>
-
 ## Star history
 
-[![Star History Chart](https://api.star-history.com/svg?repos=storytold/vectorcraft&type=Date&legend=top-left)](https://www.star-history.com/?repos=storytold%2Fvectorcraft&type=date&legend=top-left)
+[![Star History Chart](https://api.star-history.com/svg?repos=685ks/vectorcraft&type=Date&legend=top-left)](https://www.star-history.com/?repos=685ks%2Fvectorcraft&type=date&legend=top-left)
 
 ## License and credits
 
@@ -367,18 +303,12 @@ Copyright (c) 2026 ArtCraft Team and the VectorCraft contributors. Required noti
 
 Bundled fonts, icons, images and other assets keep their own open licenses; each one is listed
 with its author, source and license in [ASSETS.md](ASSETS.md). Release builds also embed the
-fonts of [craft-fonts](https://github.com/storytold/craft-fonts/blob/main/ATTRIBUTION.md) (Japanese,
+fonts of [craft-fonts](https://github.com/685ks/craft-fonts/blob/main/ATTRIBUTION.md) (Japanese,
 Simplified Chinese and Arabic faces; SIL Open Font License 1.1).
 
 The app icon (an engraved dragon on VectorCraft red, `#e8573f`) is the owner's original artwork; its
 palette and files are in [`assets/app-icon/`](assets/app-icon/README.md).
 
-The ArtCraft name, wordmark and logos in [`docs/brand/`](docs/brand/) are trademarks of the
-ArtCraft Team and are not covered by this license. They may be used only unmodified, and only as
-part of this repository and VectorCraft, under [`docs/brand/LICENSE-brand.txt`](docs/brand/LICENSE-brand.txt).
-Forks and modified versions must remove them.
-
-<p align="center">
-  <a href="https://getartcraft.com/"><img alt="ArtCraft" src="docs/brand/artcraft-mark.svg" width="28"></a><br>
-  <sub>Made by the <a href="https://getartcraft.com/">ArtCraft</a> team and community.</sub>
-</p>
+This distribution is a fork of [storytold/vectorcraft](https://github.com/storytold/vectorcraft),
+maintained by Arthavan Projects. It is not affiliated with or endorsed by ArtCraft and does not
+include the ArtCraft name, wordmark or logos.

@@ -16,7 +16,7 @@ set -euo pipefail
 # shellcheck source=../env.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../env.sh"
 LINUX="$ROOT/packaging/linux"
-APP_ID=ai.storyteller.vectorcraft
+APP_ID=app.freedev.ainz.ks.VectorCraft
 
 SKIP_BUILD=0
 while [ $# -gt 0 ]; do

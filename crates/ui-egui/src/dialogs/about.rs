@@ -61,12 +61,14 @@ fn about_tab(app: &mut VectorcraftApp, ui: &mut egui::Ui) {
     });
     ui.add_space(12.0);
     crate::community::links(app, ui);
+    if crate::community::launcher_managed() {
+        ui.add_space(4.0);
+        ui.label(egui::RichText::new(crate::community::LAUNCHER_UPDATES_NOTE).size(12.0));
+    }
     ui.add_space(12.0);
     ui.label(
-        egui::RichText::new(tl!(
-            "Part of ArtCraft. MIT OR Apache-2.0. Fonts: Source Sans 3, Inter, JetBrains Mono (OFL). Icons: Lucide (ISC) + VectorCraft."
-        ))
-        .size(11.0),
+        egui::RichText::new(tl!("MIT OR Apache-2.0. Fonts: Source Sans 3, Inter, JetBrains Mono (OFL). Icons: Lucide (ISC) + VectorCraft."))
+            .size(11.0),
     );
     // The GPU the window renders with, for bug reports (Preferences › Performance picks it).
     if let Some(adapter) = &app.graphics_adapter {

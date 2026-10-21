@@ -5,10 +5,10 @@ GenericName=Vector Graphics Editor
 Comment=Draw and edit vector illustrations, SVG and PDF
 Exec=vectorcraft %F
 TryExec=vectorcraft
-Icon=ai.storyteller.vectorcraft
+Icon=app.freedev.ainz.ks.VectorCraft
 Terminal=false
 StartupNotify=true
-StartupWMClass=ai.storyteller.vectorcraft
+StartupWMClass=app.freedev.ainz.ks.VectorCraft
 Categories=Graphics;2DGraphics;VectorGraphics;
 Keywords=vector;illustration;svg;pdf;drawing;bezier;
 # MimeType lists the formats File › Open reads that Info.plist.in declares for macOS. The type of .ai

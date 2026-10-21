@@ -232,8 +232,6 @@
 	Artboard {number}	Plan de travail {number}
 	Artboard:	Plan de travail :
 	Artboards	Plans de travail
-	ArtCraft Website	Site web d’ArtCraft
-	ArtCraft website	Site web d’ArtCraft
 	Artwork Colors	Couleurs de l’illustration
 	As Multiple Assets	En plusieurs ressources
 	As Single Asset	En une seule ressource
@@ -755,7 +753,6 @@
 	Discard Recovered Documents	Ignorer les documents récupérés
 	Discard White Overprint in Output	Ignorer la surimpression du blanc en sortie
 	Discarded {} recovered document(s)	{} document(s) récupéré(s) ignoré(s)
-	Discord	Discord
 	Discretionary Hyphen	Tiret conditionnel
 	Discretionary Ligatures	Ligatures conditionnelles
 	Display All Blacks Accurately	Afficher tous les noirs avec précision
@@ -1539,9 +1536,6 @@
 	Italian	Italien
 	Japanese	Japonais
 	Join	Joindre
-	Join Our Discord	Rejoignez notre Discord
-	Join our Discord	Rejoignez notre Discord
-	Join the ArtCraft community on Discord (discord.gg/artcraft)	Rejoignez la communauté ArtCraft sur Discord (discord.gg/artcraft)
 	Join the lines of each paragraph	Joindre les lignes de chaque paragraphe
 	Join Tool	Outil Jonction
 	Justification…	Justification…
@@ -2190,7 +2184,7 @@
 	Paragraph Style Options	Options de style de paragraphe
 	Paragraph Styles	Styles de paragraphe
 	Paragraph Symbol	Symbole de paragraphe
-	Part of ArtCraft. MIT OR Apache-2.0. Fonts: Source Sans 3, Inter, JetBrains Mono (OFL). Icons: Lucide (ISC) + VectorCraft.	Fait partie d’ArtCraft. MIT OR Apache-2.0. Polices : Source Sans 3, Inter, JetBrains Mono (OFL). Icônes : Lucide (ISC) + VectorCraft.
+	MIT OR Apache-2.0. Fonts: Source Sans 3, Inter, JetBrains Mono (OFL). Icons: Lucide (ISC) + VectorCraft.	MIT OR Apache-2.0. Polices : Source Sans 3, Inter, JetBrains Mono (OFL). Icônes : Lucide (ISC) + VectorCraft.
 	Password	Mot de passe
 	Paste	Coller
 	Paste in Back	Coller derrière
@@ -3457,8 +3451,8 @@
 	Vector illustration — fast, open, scriptable.	Illustration vectorielle — rapide, ouverte, scriptable.
 	VectorCraft didn't quit normally last time. These documents had unsaved changes:	VectorCraft ne s’est pas fermé normalement la dernière fois. Ces documents comportaient des modifications non enregistrées :
 	VectorCraft Help…	Aide de VectorCraft…
-	VectorCraft on getartcraft.com	VectorCraft sur getartcraft.com
 	VectorCraft on GitHub	VectorCraft sur GitHub
+	Report an Issue…	Signaler un problème…
 	Vectors	Vecteurs
 	Version {version} — open-source vector illustration in pure Rust.	Version {version} — illustration vectorielle open source en pur Rust.
 	Version:	Version :
@@ -4867,7 +4861,7 @@ lighting	Light	Lumière
 	PDF/X-4:2010	PDF/X-4:2010
 	PRs	PR
 	Page Cover 1640×624	Couverture de page 1640×624
-	Part of ArtCraft. MIT OR Apache-2.0. Fonts: Source Sans 3, Inter, JetBrains Mono, Noto Sans SC (OFL). Icons: Lucide (ISC) + VectorCraft.	Fait partie d’ArtCraft. MIT OR Apache-2.0. Polices : Source Sans 3, Inter, JetBrains Mono, Noto Sans SC (OFL). Icônes : Lucide (ISC) + VectorCraft.
+	MIT OR Apache-2.0. Fonts: Source Sans 3, Inter, JetBrains Mono, Noto Sans SC (OFL). Icons: Lucide (ISC) + VectorCraft.	MIT OR Apache-2.0. Polices : Source Sans 3, Inter, JetBrains Mono, Noto Sans SC (OFL). Icônes : Lucide (ISC) + VectorCraft.
 	Pattern Swatches	Nuances de motif
 	Pen	Plume
 	Pentagram	Pentagramme
@@ -5188,6 +5182,7 @@ theme	Appearance	Apparence
 # User Interface › Color Scheme
 	Color Scheme	Jeu de couleurs
 	Modern	Moderne
+	Arthavan	Arthavan
 
 # Symbol Options › Export Type
 	Export Type:	Type d'exportation :

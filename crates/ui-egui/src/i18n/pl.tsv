@@ -30,7 +30,6 @@
 	About VectorCraft	O programie VectorCraft
 	Align to Path	Wyrównaj do ścieżki
 	Cut Path at Selected Anchor Points	Rozetnij ścieżkę w zaznaczonych punktach kontrolnych
-	Join Our Discord	Dołącz do naszego Discorda
 	Language	Język
 	UI Brightness	Jasność interfejsu
 	Dark	Ciemny
@@ -651,9 +650,8 @@
 	Save Swatch Library…	Zapisz bibliotekę próbek…
 	Symbol Libraries	Biblioteki symboli
 	Help	Pomoc
-	ArtCraft Website	Strona ArtCraft
-	VectorCraft on getartcraft.com	VectorCraft w getartcraft.com
 	VectorCraft on GitHub	VectorCraft w serwisie GitHub
+	Report an Issue…	Zgłoś problem…
 	Search Commands…	Szukaj poleceń…
 	VectorCraft Help…	Pomoc VectorCraft…
 	Auto Color	Kolor automatyczny
@@ -1911,7 +1909,7 @@ lighting	Light	Światło
 	Select All Bound Objects	Zaznacz wszystkie powiązane obiekty
 	Multiple objects	Wiele obiektów
 	Graphics: {adapter}	Grafika: {adapter}
-	Part of ArtCraft. MIT OR Apache-2.0. Fonts: Source Sans 3, Inter, JetBrains Mono (OFL). Icons: Lucide (ISC) + VectorCraft.	Część ArtCraft. MIT LUB Apache-2.0. Czcionki: Source Sans 3, Inter, JetBrains Mono (OFL). Ikony: Lucide (ISC) + VectorCraft.
+	MIT OR Apache-2.0. Fonts: Source Sans 3, Inter, JetBrains Mono (OFL). Icons: Lucide (ISC) + VectorCraft.	MIT LUB Apache-2.0. Czcionki: Source Sans 3, Inter, JetBrains Mono (OFL). Ikony: Lucide (ISC) + VectorCraft.
 	Version {version} — open-source vector illustration in pure Rust.	Wersja {version} — otwartoźródłowa grafika wektorowa w czystym Ruście.
 	Align to Page	Wyrównaj do strony
 	Smooth Color	Gładki kolor
@@ -3578,10 +3576,6 @@ effect	Regular	Normalny
 	Recent Files	Ostatnie pliki
 	Vector illustration — fast, open, scriptable.	Ilustracja wektorowa — szybka, otwarta, skryptowalna.
 	Welcome to VectorCraft	Witamy w VectorCraft
-	ArtCraft website	Strona ArtCraft
-	Discord	Discord
-	Join our Discord	Dołącz do naszego Discorda
-	Join the ArtCraft community on Discord (discord.gg/artcraft)	Dołącz do społeczności ArtCraft na Discordzie (discord.gg/artcraft)
 	Source code on GitHub	Kod źródłowy w serwisie GitHub
 	All Tools	Wszystkie narzędzia
 	Draw	Rysuj
@@ -5041,6 +5035,7 @@ mark-style	Japanese	Japońskie
 # User Interface › Color Scheme
 	Color Scheme	Schemat kolorów
 	Modern	Nowoczesny
+	Arthavan	Arthavan
 
 # Symbol Options › Export Type
 	Export Type:	Typ eksportu:
