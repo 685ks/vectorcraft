@@ -16,7 +16,7 @@ head-and-shoulders portrait on a full-bleed field, no frame or roundel, with the
 **Tile:** `viewBox="0 0 512 512"`, a rounded square with `rx=112`, clipped. The macOS files add Apple's
 transparent margin (tile = 824/1024 of the canvas); Windows and Linux use the tile edge to edge.
 
-**Provenance:** the owner's original ArtCraft drawing (2880 px, keyed to the palette), vectorised with
+**Provenance:** the owner's original drawing (2880 px, keyed to the palette), vectorised with
 craftrules `assets/logo-options/_tools/vectorize_tile.py`. The drawing is kept in craftrules at
 `craftrules/assets/app-icons/vectorcraft/source.png`, not here. `vectorcraft.svg` is the canonical
 artwork. Licence: see `LICENSE.txt`.
@@ -31,8 +31,8 @@ artwork. Licence: see `LICENSE.txt`.
 | `vectorcraft-macos-512.png` | tile with Apple margin, 512 px | runtime Dock icon (`apps/vectorcraft/src/main.rs`) |
 | `vectorcraft.icns` | macOS icon set, 16 to 1024 px | `cargo xtask bundle` (`CFBundleIconFile`) |
 | `vectorcraft.ico` | Windows icon, 16 to 256 px | `apps/vectorcraft/build.rs` (embedded in the `.exe`) |
-| `hicolor/<size>/apps/ai.storyteller.vectorcraft.png` | Linux theme icons, 16 to 512 px; the 256 one is also the runtime icon on Windows and Linux, the 128 one the brand mark in the app bar and About box (`crates/ui-egui/src/brand.rs`) | `packaging/linux/ai.storyteller.vectorcraft.desktop` |
-| `hicolor/scalable/apps/ai.storyteller.vectorcraft.svg` | Linux scalable icon | as above |
+| `hicolor/<size>/apps/app.freedev.ainz.ks.VectorCraft.png` | Linux theme icons, 16 to 512 px; the 256 one is also the runtime icon on Windows and Linux, the 128 one the brand mark in the app bar and About box (`crates/ui-egui/src/brand.rs`) | `packaging/linux/app.freedev.ainz.ks.VectorCraft.desktop` |
+| `hicolor/scalable/apps/app.freedev.ainz.ks.VectorCraft.svg` | Linux scalable icon | as above |
 
 ## How it reaches each OS
 
@@ -40,9 +40,9 @@ artwork. Licence: see `LICENSE.txt`.
   `.app` from `cargo xtask bundle` carries `vectorcraft.icns`.
 - **Windows:** `build.rs` embeds `vectorcraft.ico` and VERSIONINFO with `winresource` (taskbar, Start
   menu, Explorer, Alt-Tab); the runtime icon covers the title bar.
-- **Linux:** install `packaging/linux/ai.storyteller.vectorcraft.desktop` to `share/applications/` and
+- **Linux:** install `packaging/linux/app.freedev.ainz.ks.VectorCraft.desktop` to `share/applications/` and
   `hicolor/` to `share/icons/`. The app sets its Wayland app ID / X11 class to
-  `ai.storyteller.vectorcraft`, so the dock matches the window to the launcher.
+  `app.freedev.ainz.ks.VectorCraft`, so the dock matches the window to the launcher.
 
 ## Regenerate
 

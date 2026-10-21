@@ -226,8 +226,6 @@
 	Arrange: Bring to Front	Organizar: Trazer para Frente
 	Arrowheads:	Pontas de Seta:
 	Art using a deleted global swatch keeps its colour.	A arte que usa uma amostra global excluída mantém sua cor.
-	ArtCraft Website	Site do ArtCraft
-	ArtCraft website	Site do ArtCraft
 	Artboard Options	Opções de Mesa de Trabalho
 	Artboard Options…	Opções de Mesa de Trabalho…
 	Artboard Tool	Ferramenta Mesa de Trabalho
@@ -1336,10 +1334,7 @@
 	Isolate Selected Object	Isolar Objeto Selecionado
 	Italian	Italiano
 	Join	Unir
-	Join Our Discord	Junte-se ao nosso Discord
 	Join Tool	Ferramenta Unir
-	Join our Discord	Junte-se ao nosso Discord
-	Join the ArtCraft community on Discord (discord.gg/artcraft)	Junte-se à comunidade do ArtCraft no Discord (discord.gg/artcraft)
 	Join the lines of each paragraph	Junte as linhas de cada parágrafo
 	Justification…	Justificação…
 	Keep Formatting	Manter Formatação
@@ -2826,7 +2821,7 @@
 	VectorCraft Help…	Ajuda do VectorCraft…
 	VectorCraft didn't quit normally last time. These documents had unsaved changes:	O VectorCraft não fechou normalmente da última vez. Estes documentos tinham alterações não salvas:
 	VectorCraft on GitHub	VectorCraft no GitHub
-	VectorCraft on getartcraft.com	VectorCraft em getartcraft.com
+	Report an Issue…	Relatar um problema…
 	Vectors	Vetores
 	Version {version} — open-source vector illustration in pure Rust.	Versão {version} — ilustração vetorial de código aberto em Rust puro.
 	Version:	Versão:
@@ -4134,7 +4129,6 @@ axis	Both	Ambos
 	Delete these {n} graphic styles?	Excluir estes {n} estilos gráficos?
 	Delete this {n} graphic style?	Excluir este {n} estilo gráfico?
 	Discarded {} recovered document(s)	{} documento(s) recuperado(s) descartado(s)
-	Discord	Discord
 	Do Not Move	Não Mover
 	Document profile	Perfil do documento
 	Document Swatches	Amostras do Documento
@@ -4339,7 +4333,7 @@ axis	Both	Ambos
 	Packaged {n} file(s){note}	{n} arquivo(s) empacotado(s){note}
 	Page information	Informações da página
 	Paragraph Style	Estilo de Parágrafo
-	Part of ArtCraft. MIT OR Apache-2.0. Fonts: Source Sans 3, Inter, JetBrains Mono (OFL). Icons: Lucide (ISC) + VectorCraft.	Parte do ArtCraft. MIT OR Apache-2.0. Fontes: Source Sans 3, Inter, JetBrains Mono (OFL). Ícones: Lucide (ISC) + VectorCraft.
+	MIT OR Apache-2.0. Fonts: Source Sans 3, Inter, JetBrains Mono (OFL). Icons: Lucide (ISC) + VectorCraft.	MIT OR Apache-2.0. Fontes: Source Sans 3, Inter, JetBrains Mono (OFL). Ícones: Lucide (ISC) + VectorCraft.
 	Perspective grid presets	Predefinidos de grade de perspectiva
 	Phone 390×844	Celular 390×844
 	Place onto a new locked, dimmed template layer below the current layer	Colocar em uma nova camada de modelo bloqueada e esmaecida abaixo da camada atual
@@ -5108,6 +5102,7 @@ mark-style	Japanese	Japonesas
 # User Interface › Color Scheme
 	Color Scheme	Esquema de cores
 	Modern	Moderno
+	Arthavan	Arthavan
 
 # Symbol Options › Export Type
 @msg	name is empty	o nome está vazio

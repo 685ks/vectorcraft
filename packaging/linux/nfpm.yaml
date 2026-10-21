@@ -13,8 +13,8 @@ release: 1
 section: graphics
 priority: optional
 maintainer: ${VECTORCRAFT_MAINTAINER}
-vendor: Learning Machines LLC
-homepage: https://getartcraft.com/apps/vectorcraft
+vendor: Arthavan Projects
+homepage: https://github.com/685ks/vectorcraft
 license: MIT OR Apache-2.0
 description: |-
   Open-source, native vector illustration app.

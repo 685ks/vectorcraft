@@ -34,7 +34,6 @@
 	About VectorCraft	Tietoja VectorCraftista
 	Align to Path	Tasaa polkuun
 	Cut Path at Selected Anchor Points	Leikkaa polku valituista ankkuripisteistä
-	Join Our Discord	Liity Discordiimme
 	Language	Kieli
 	UI Brightness	Käyttöliittymän kirkkaus
 	Dark	Tumma
@@ -694,9 +693,8 @@
 	Save Swatch Library…	Tallenna värimallikirjasto…
 	Symbol Libraries	Symbolikirjastot
 	Help	Ohje
-	ArtCraft Website	ArtCraft-verkkosivusto
-	VectorCraft on getartcraft.com	VectorCraft getartcraft.comissa
 	VectorCraft on GitHub	VectorCraft GitHubissa
+	Report an Issue…	Ilmoita ongelmasta…
 	Search Commands…	Hae komentoja…
 	VectorCraft Help…	VectorCraft-ohje…
 	Auto Color	Automaattinen väri
@@ -1955,8 +1953,8 @@ lighting	Light	Valo
 	Select All Bound Objects	Valitse kaikki sidotut objektit
 	Multiple objects	Useita objekteja
 	Graphics: {adapter}	Grafiikka: {adapter}
-	Part of ArtCraft. MIT OR Apache-2.0. Fonts: Source Sans 3, Inter, JetBrains Mono (OFL). Icons: Lucide (ISC) + VectorCraft.	Osa ArtCraftia. MIT OR Apache-2.0. Fontit: Source Sans 3, Inter, JetBrains Mono (OFL). Kuvakkeet: Lucide (ISC) + VectorCraft.
-	Part of ArtCraft. MIT OR Apache-2.0. Fonts: Source Sans 3, Inter, JetBrains Mono, Noto Sans SC (OFL). Icons: Lucide (ISC) + VectorCraft.	Osa ArtCraftia. MIT OR Apache-2.0. Fontit: Source Sans 3, Inter, JetBrains Mono, Noto Sans SC (OFL). Kuvakkeet: Lucide (ISC) + VectorCraft.
+	MIT OR Apache-2.0. Fonts: Source Sans 3, Inter, JetBrains Mono (OFL). Icons: Lucide (ISC) + VectorCraft.	MIT OR Apache-2.0. Fontit: Source Sans 3, Inter, JetBrains Mono (OFL). Kuvakkeet: Lucide (ISC) + VectorCraft.
+	MIT OR Apache-2.0. Fonts: Source Sans 3, Inter, JetBrains Mono, Noto Sans SC (OFL). Icons: Lucide (ISC) + VectorCraft.	MIT OR Apache-2.0. Fontit: Source Sans 3, Inter, JetBrains Mono, Noto Sans SC (OFL). Kuvakkeet: Lucide (ISC) + VectorCraft.
 	Version {version} — open-source vector illustration in pure Rust.	Versio {version} — avoimen lähdekoodin vektorikuvitusohjelma puhtaalla Rustilla.
 	Align to Page	Tasaa sivuun
 	Smooth Color	Tasainen väri
@@ -3672,10 +3670,6 @@ effect	Regular	Normaali
 	Recent Files	Viimeisimmät tiedostot
 	Vector illustration — fast, open, scriptable.	Vektorikuvitusta – nopea, avoin, skriptattava.
 	Welcome to VectorCraft	Tervetuloa VectorCraftiin
-	ArtCraft website	ArtCraftin verkkosivusto
-	Discord	Discord
-	Join our Discord	Liity Discordiimme
-	Join the ArtCraft community on Discord (discord.gg/artcraft)	Liity ArtCraft-yhteisöön Discordissa (discord.gg/artcraft)
 	Source code on GitHub	Lähdekoodi GitHubissa
 	All Tools	Kaikki työkalut
 	Draw	Piirrä
@@ -5153,6 +5147,7 @@ mark-style	Japanese	Japanilainen
 # User Interface › Color Scheme
 	Color Scheme	Väriteema
 	Modern	Moderni
+	Arthavan	Arthavan
 
 # Symbol Options › Export Type
 	Export Type:	Vientityyppi:

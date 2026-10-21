@@ -5,7 +5,7 @@
 <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
   <mime-type type="application/x-vectorcraft">
     <comment>VectorCraft document</comment>
-    <icon name="ai.storyteller.vectorcraft"/>
+    <icon name="app.freedev.ainz.ks.VectorCraft"/>
     <glob pattern="*.vectorcraft"/>
     <glob pattern="*.drawcraft"/>
   </mime-type>

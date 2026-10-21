@@ -812,6 +812,11 @@ version = "0.1.0"
 source = "git+https://github.com/storytold/craft-libs?rev=82a24b006eefa036b43c09a67fb9a3fbd17ffe63#82a24b006eefa036b43c09a67fb9a3fbd17ffe63"
 
 [[package]]
+name = "craft-fonts-build"
+version = "0.1.0"
+source = "git+https://github.com/685ks/craft-fonts?rev=f28afbb766ccddc9cfd136b8cf0b451a24149e1b#f28afbb766ccddc9cfd136b8cf0b451a24149e1b"
+
+[[package]]
 name = "craft-pdf"
 version = "0.1.0"
 source = "git+https://github.com/storytold/craft-libs?rev=ca50d63b773c99f96e75c77ce5a1d21e7c9cda0d#ca50d63b773c99f96e75c77ce5a1d21e7c9cda0d"
@@ -829,6 +834,11 @@ source = "git+https://github.com/storytold/craft-libs?rev=d991bf6792f8ade99c5135
 dependencies = [
  "tempfile",
 ]
+
+[[package]]
+name = "craft-tokens"
+version = "0.1.0"
+source = "git+https://github.com/685ks/craft-libs?tag=v0.1.0#5b1852d2a611b6161827babecc71e27c214af95f"
 
 [[package]]
 name = "craft-ui"
@@ -4672,6 +4682,7 @@ dependencies = [
  "craft-docpath",
  "crc32fast",
  "flate2",
+ "getrandom 0.3.4",
  "image",
  "kurbo 0.13.1",
  "log",
@@ -4923,6 +4934,7 @@ dependencies = [
 name = "vectorcraft-text"
 version = "0.14.0"
 dependencies = [
+ "craft-fonts-build",
  "harfrust 0.13.3",
  "icu_segmenter",
  "kurbo 0.13.1",
@@ -4979,6 +4991,7 @@ dependencies = [
 name = "vectorcraft-ui-egui"
 version = "0.14.0"
 dependencies = [
+ "craft-tokens",
  "craft-ui",
  "egui",
  "egui_extras",

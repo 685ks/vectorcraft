@@ -1226,3 +1226,62 @@ fn add_text_reports_overflow_and_takes_a_fit() {
     let point = made(&call(&mut s, 3, "add_text", json!({"text": "NEON DRIVE", "x": 0, "y": 300, "size": 60})));
     assert!(point.get("overflow").is_none(), "{point}");
 }
+
+/// A fake app that wants `token` first: replies to the auth frame as the real control server does
+/// and answers one call; returns the frames it read.
+fn fake_app_with_token(token: &'static str) -> (String, std::thread::JoinHandle<Vec<Value>>) {
+    use std::io::{BufRead, Write};
+    let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+    let addr = listener.local_addr().unwrap().to_string();
+    let h = std::thread::spawn(move || {
+        let (stream, _) = listener.accept().unwrap();
+        let mut reader = std::io::BufReader::new(stream.try_clone().unwrap());
+        let mut out = stream;
+        let mut seen = vec![];
+        let mut line = String::new();
+        while reader.read_line(&mut line).unwrap_or(0) > 0 {
+            let msg: Value = serde_json::from_str(line.trim()).unwrap();
+            line.clear();
+            seen.push(msg.clone());
+            if seen.len() == 1 {
+                let ok = vectorcraft_engine::control_token::authenticates(token, msg["method"].as_str().unwrap_or(""), &msg["params"]);
+                let reply = if ok {
+                    json!({"id": msg["id"], "ok": true, "result": {"authenticated": true}})
+                } else {
+                    json!({"id": msg["id"], "ok": false, "error": "authentication required"})
+                };
+                writeln!(out, "{reply}").unwrap();
+                if !ok {
+                    break;
+                }
+                continue;
+            }
+            writeln!(out, "{}", json!({"id": msg["id"], "ok": true, "result": {"method": msg["method"]}})).unwrap();
+        }
+        seen
+    });
+    (addr, h)
+}
+
+const TEST_TOKEN: &str = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
+
+#[test]
+fn remote_sends_the_control_token_first() {
+    let (addr, h) = fake_app_with_token(TEST_TOKEN);
+    let mut remote = Remote::connect_with_token(&addr, Some(TEST_TOKEN.into())).unwrap();
+    assert_eq!(remote.call("document.inspect", json!({})).unwrap()["method"], "document.inspect");
+    drop(remote);
+    let seen = h.join().unwrap();
+    assert_eq!(seen[0]["method"], "auth");
+    assert_eq!(seen[0]["params"]["token"], TEST_TOKEN);
+    assert_eq!(seen[1]["method"], "document.inspect");
+}
+
+#[test]
+fn a_refused_control_token_is_permission_denied() {
+    let (addr, h) = fake_app_with_token(TEST_TOKEN);
+    let wrong = "f".repeat(64);
+    let err = Remote::connect_with_token(&addr, Some(wrong)).err().expect("a wrong token must not connect");
+    assert_eq!(err.kind(), std::io::ErrorKind::PermissionDenied, "{err}");
+    assert_eq!(h.join().unwrap().len(), 1, "nothing is sent after a refused token");
+}

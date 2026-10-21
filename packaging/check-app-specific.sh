@@ -6,10 +6,10 @@ cd "$(dirname "${BASH_SOURCE[0]}")/.."
 python3 - <<'PYEOF'
 import yaml
 manifests = []
-for name in ("ai.storyteller.vectorcraft.yml", "ai.storyteller.vectorcraft.bundle.yml"):
+for name in ("app.freedev.ainz.ks.VectorCraft.yml", "app.freedev.ainz.ks.VectorCraft.bundle.yml"):
     with open("packaging/linux/flatpak/" + name) as source:
         manifest = yaml.safe_load(source)
-    assert manifest["id"] == "ai.storyteller.vectorcraft" and manifest["command"] == "vectorcraft", name
+    assert manifest["id"] == "app.freedev.ainz.ks.VectorCraft" and manifest["command"] == "vectorcraft", name
     manifests.append(manifest)
 for key in ("runtime", "runtime-version", "sdk", "finish-args"):
     assert manifests[0][key] == manifests[1][key], f"Flatpak manifests disagree on {key}"

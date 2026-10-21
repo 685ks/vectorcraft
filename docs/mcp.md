@@ -50,7 +50,7 @@ installed binary path, not a literal `~` or `$HOME` expression. Avoid symlinks i
 `target/release`: cleaning the build directory breaks them. A source build alone does
 not put the CLI on `PATH`.
 
-For a live session, start the app first: `cargo run --release -p vectorcraft -- --control 7979`.
+For a live session, start the app first: `cargo run --release -p vectorcraft -- --control 7979`. The MCP server authenticates with the control token the app wrote (see [control-protocol.md](control-protocol.md#authentication)).
 
 ### From an installed release
 

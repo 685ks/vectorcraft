@@ -220,8 +220,6 @@
 	Artboard {number}	Rityta {number}
 	Artboard:	Rityta:
 	Artboards	Ritytor
-	ArtCraft Website	ArtCrafts webbplats
-	ArtCraft website	ArtCrafts webbplats
 	Artwork Colors	Färger i grafiken
 	As Multiple Assets	Som flera tillgångar
 	As Single Asset	Som en enda tillgång
@@ -740,7 +738,6 @@
 	Discard Recovered Documents	Släng återställda dokument
 	Discard White Overprint in Output	Släng vit övertryckning i utdata
 	Discarded {} recovered document(s)	Slängde {} återställda dokument
-	Discord	Discord
 	Discretionary Hyphen	Mjukt bindestreck
 	Discretionary Ligatures	Valfria ligaturer
 	Display All Blacks Accurately	Visa alla svarta korrekt
@@ -1514,9 +1511,6 @@
 	Italian	Italienska
 	Japanese	Japanska
 	Join	Foga samman
-	Join Our Discord	Gå med i vår Discord
-	Join our Discord	Gå med i vår Discord
-	Join the ArtCraft community on Discord (discord.gg/artcraft)	Gå med i ArtCraft-gemenskapen på Discord (discord.gg/artcraft)
 	Join the lines of each paragraph	Foga samman raderna i varje stycke
 	Join Tool	Sammanfogningsverktyg
 	Justification…	Justering…
@@ -2149,7 +2143,7 @@
 	Paragraph Style Options	Alternativ för styckestil
 	Paragraph Styles	Styckestilar
 	Paragraph Symbol	Styckesymbol
-	Part of ArtCraft. MIT OR Apache-2.0. Fonts: Source Sans 3, Inter, JetBrains Mono (OFL). Icons: Lucide (ISC) + VectorCraft.	Del av ArtCraft. MIT OR Apache-2.0. Typsnitt: Source Sans 3, Inter, JetBrains Mono (OFL). Ikoner: Lucide (ISC) + VectorCraft.
+	MIT OR Apache-2.0. Fonts: Source Sans 3, Inter, JetBrains Mono (OFL). Icons: Lucide (ISC) + VectorCraft.	MIT OR Apache-2.0. Typsnitt: Source Sans 3, Inter, JetBrains Mono (OFL). Ikoner: Lucide (ISC) + VectorCraft.
 	Password	Lösenord
 	Paste	Klistra in
 	Paste in Back	Klistra in bakom
@@ -3401,8 +3395,8 @@
 	Vector illustration — fast, open, scriptable.	Vektorillustration – snabb, öppen, skriptbar.
 	VectorCraft didn't quit normally last time. These documents had unsaved changes:	VectorCraft avslutades inte normalt förra gången. De här dokumenten hade osparade ändringar:
 	VectorCraft Help…	VectorCraft-hjälp…
-	VectorCraft on getartcraft.com	VectorCraft på getartcraft.com
 	VectorCraft on GitHub	VectorCraft på GitHub
+	Report an Issue…	Rapportera ett problem…
 	Vectors	Vektorer
 	Version {version} — open-source vector illustration in pure Rust.	Version {version} – vektorillustration med öppen källkod i ren Rust.
 	Version:	Version:
@@ -4785,7 +4779,7 @@ lighting	Light	Ljus
 	PDF/X-4:2010	PDF/X-4:2010
 	PRs	PR:er
 	Page Cover 1640×624	Sidomslag 1640×624
-	Part of ArtCraft. MIT OR Apache-2.0. Fonts: Source Sans 3, Inter, JetBrains Mono, Noto Sans SC (OFL). Icons: Lucide (ISC) + VectorCraft.	Del av ArtCraft. MIT OR Apache-2.0. Typsnitt: Source Sans 3, Inter, JetBrains Mono, Noto Sans SC (OFL). Ikoner: Lucide (ISC) + VectorCraft.
+	MIT OR Apache-2.0. Fonts: Source Sans 3, Inter, JetBrains Mono, Noto Sans SC (OFL). Icons: Lucide (ISC) + VectorCraft.	MIT OR Apache-2.0. Typsnitt: Source Sans 3, Inter, JetBrains Mono, Noto Sans SC (OFL). Ikoner: Lucide (ISC) + VectorCraft.
 	Pattern Swatches	Mönsterfärgrutor
 	Pen	Penna
 	Pentagram	Pentagram
@@ -5145,6 +5139,7 @@ theme	Appearance	Utseende
 # User Interface › Color Scheme
 	Color Scheme	Färgschema
 	Modern	Modern
+	Arthavan	Arthavan
 
 # Symbol Options › Export Type
 	Export Type:	Exporttyp:

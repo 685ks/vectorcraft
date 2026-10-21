@@ -1,0 +1,12 @@
+# Release metadata for the Arthavan Projects release workflow (685ks/craft-actions,
+# .github/workflows/release.yml) and the launcher that installs VectorCraft.
+id = "vectorcraft"
+display_name = "VectorCraft"
+bundle_id = "app.freedev.ainz.ks.VectorCraft"
+publisher = "Arthavan Projects"
+description = "A vector illustration app: paths, type, effects, PDF, SVG and EPS"
+categories = ["Graphics", "VectorGraphics", "Illustration"]
+icon_png = "assets/app-icon/hicolor/512x512/apps/app.freedev.ainz.ks.VectorCraft.png"
+icon_icns = "assets/app-icon/vectorcraft.icns"
+icon_ico = "assets/app-icon/vectorcraft.ico"
+license = "MIT OR Apache-2.0"
