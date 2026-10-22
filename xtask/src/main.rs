@@ -6,10 +6,10 @@
 mod affinity_corpus;
 mod assets;
 mod brands;
-mod bundle;
 mod cursors;
 mod ico;
 mod layers;
+mod packaging;
 mod pdf_deps;
 mod pngsuite;
 mod sha256;
@@ -34,7 +34,6 @@ commands:
   corpus [--download] [--affinity]
                   show where test corpora live; --download fetches PngSuite into corpus/pngsuite,
                   --affinity the pinned public Affinity documents into corpus/affinity
-  bundle          build dist/VectorCraft.app (macOS) with assets/app-icon/vectorcraft.icns
   ico <out.ico> <png>...
                   pack PNGs into a Windows .ico (used by packaging/icons.sh)
   stats [--exact] count tests and lines per crate (--exact: ask the test harness via `-- --list`)
@@ -55,7 +54,6 @@ fn main() -> ExitCode {
         Some("ci") => cmd_ci(),
         Some("corpus") if rest.contains(&"--affinity") => affinity_corpus::fetch(),
         Some("corpus") => cmd_corpus(rest.contains(&"--download")),
-        Some("bundle") => bundle::run(&root()),
         Some("ico") => ico::run(&rest),
         Some("version") => version::run(&root(), &rest),
         Some("stats") => stats::run(&root(), rest.contains(&"--exact")),

@@ -38,16 +38,9 @@ use; which platforms a release covers is decided by the shared workflow.
 
 | Platform | Artifacts | Built on |
 |---|---|---|
-| macOS 11+ (universal: Apple silicon and Intel) | `vectorcraft-<v>-macos-universal.dmg`, `vectorcraft-cli-<v>-macos-universal.zip` | `macos-15` |
 | Windows x64 | `vectorcraft-<v>-windows-x64.msi`, `vectorcraft-<v>-windows-x64-portable.zip` | `windows-latest` |
 | Windows x86 (32-bit) | `vectorcraft-<v>-windows-x86.msi`, `vectorcraft-<v>-windows-x86-portable.zip` | `windows-latest` |
 | Windows on ARM64 | `vectorcraft-<v>-windows-arm64.msi`, `vectorcraft-<v>-windows-arm64-portable.zip` | `windows-latest` (cross-compiled) |
-| Linux x86_64 | `vectorcraft-<v>-linux-x86_64.{AppImage,deb,rpm,tar.gz}` | `ubuntu-22.04` |
-| Linux aarch64 | `vectorcraft-<v>-linux-aarch64.{AppImage,deb,rpm,tar.gz}` | `ubuntu-22.04-arm` |
-| Linux riscv64 | `vectorcraft-<v>-linux-riscv64.tar.gz` (cross-compiled, glibc >= 2.39; CLI smoke-tested under QEMU) | `ubuntu-24.04` |
-| Linux AppImage updates | `vectorcraft-<v>-linux-{x86_64,aarch64}.AppImage.zsync` | with the AppImages |
-| Flatpak x86_64, aarch64 | `vectorcraft-<v>-linux-{x86_64,aarch64}.flatpak` | `ubuntu-24.04`, `ubuntu-24.04-arm` (repackages the Linux tarball) |
-| FreeBSD 14 x86_64 | `vectorcraft-<v>-freebsd-x86_64.tar.gz` | a FreeBSD 14.3 VM on `ubuntu-latest` |
 | Web | `vectorcraft-web-<v>.zip`, a static site (see [`packaging/web/README.md`](../packaging/web/README.md)) | `ubuntu-latest` |
 
 `vectorcraft --version` and `vectorcraft-cli --version` print the version from `Cargo.toml`.
@@ -59,42 +52,6 @@ them (the web build embeds only the UI font, BIZ UDPGothic Regular, to stay smal
 (`copy_font_licences` in `packaging/env.sh`). Bump the pins deliberately, in every job at once.
 The rules are in craftrules `standards/fonts.md`, the build option in
 [`docs/development.md`](development.md) › Fonts.
-
-### macOS
-
-`packaging/macos/package.sh` builds `aarch64-apple-darwin` and `x86_64-apple-darwin` with
-`MACOSX_DEPLOYMENT_TARGET=11.0`, joins them with `lipo` and assembles `VectorCraft.app`:
-
-- `Info.plist` is generated from `Info.plist.in` (bundle id `app.freedev.ainz.ks.VectorCraft`,
-  `LSMinimumSystemVersion` 11.0, the version and the build commit). The icon is
-  `assets/app-icon/vectorcraft.icns`. `cargo xtask bundle` fills in the same template for its
-  development app.
-- **Document types:** `Info.plist.in` declares every format File › Open reads, so Finder opens
-  them with VectorCraft (double-click, Open With, a drop on the Dock icon). VectorCraft owns its own
-  formats and is an alternate for the others. A test keeps the list in step with the engine's
-  `OPEN_EXTS`. AppKit hands the files to the app as open-document events, which
-  `apps/vectorcraft/src/open_documents.rs` opens like files named on the command line.
-- **Signing** goes inside-out with the hardened runtime and a secure timestamp: the executable
-  first, then the bundle, with no `--deep` on the final signature. The entitlements
-  (`entitlements.plist`) are deliberately empty.
-- **Notarization:** the app is zipped and sent with `xcrun notarytool submit --wait`, then the
-  ticket is stapled and checked with `stapler validate` and `spctl`. The app goes on a DMG
-  (`hdiutil create -srcfolder`, retried when a CI runner's device is busy, with an `Applications` link
-  to drag onto), which is signed, notarized and stapled too; the app mounted from it must pass
-  `codesign --verify --strict --deep` (#1085). Its Finder window (background, icon size and positions) comes from
-  [`packaging/macos/dmg/`](../packaging/macos/dmg/README.md), and its volume is named `VectorCraft`
-  without the version, which the window's background needs; the DMG file name keeps the version.
-- **CLI:** the universal `vectorcraft-cli` is signed the same way, zipped, and the zip is
-  notarized. A bare executable can't hold a stapled ticket, so Gatekeeper looks the CLI's ticket up
-  online the first time a downloaded copy runs.
-
-Locally, without certificates, the script signs ad hoc (`codesign -s -`) and skips notarization,
-which is enough to check the bundle and the DMG on your own Mac:
-
-```sh
-packaging/macos/package.sh --arch universal   # needs both rustup targets
-packaging/macos/package.sh --arch aarch64     # quicker, host only
-```
 
 ### Windows
 
@@ -144,70 +101,6 @@ to the target triple, so host build scripts aren't affected.
   It is the one place to adapt when the signing setup changes; `WINDOWS_TIMESTAMP_URL` and
   `SIGNTOOL` override the timestamp server and the `signtool.exe` path.
 
-### Linux
-
-`packaging/linux/package.sh` builds the release binaries and packages them as an AppImage, a
-`.deb` and an `.rpm` (with [nfpm](https://nfpm.goreleaser.com), from `nfpm.yaml`) and a plain
-`.tar.gz` tree (`bin/`, `share/`). The packages install both programs, the desktop entry, the
-AppStream metainfo, the MIME type for VectorCraft documents, the icons and the licence files.
-
-**Document types.** The desktop entry's `MimeType` lists every format File › Open reads but PSD,
-PSB, `.ps` PostScript and Targa, so file managers list VectorCraft under Open With for them.
-`app.freedev.ainz.ks.VectorCraft.mime.xml` declares the types that shared-mime-info lacks: VectorCraft
-documents and templates, `.ait` templates and Affinity files (`application/x-affinity`). An `.af`
-file gets the Affinity type by its content, and `.afdesign` and `.afpub` files by their extension.
-A test keeps both files in step with the engine's `OPEN_EXTS`.
-
-The jobs run on `ubuntu-22.04`, the oldest GitHub-hosted image, so the binaries only need
-glibc 2.35 or newer: Ubuntu 22.04+, Debian 12+, Fedora 36+ and RHEL 10. Moving the job to a newer
-image raises that floor, so do it deliberately. After packaging, the job prints the `.deb`'s
-metadata and contents, runs `ldd` on the binary and runs each AppImage with `--version`.
-
-**RPM dependencies.** The x86_64 and aarch64 RPMs require 64-bit shared-library
-capabilities rather than distribution-specific package names: `libc`, libm's `GLIBC_2.35`,
-`libgcc_s`, `libxkbcommon`, and either Vulkan or EGL. Windowing and GPU
-libraries are loaded at runtime, so `ldd` alone does not list every requirement.
-The glibc capability enforces the same floor as the `.deb`; a distribution with
-an older glibc is not supported by these binaries. It names libm, whose `hypot` and `hypotf`
-are the binaries' GLIBC_2.35 symbols: RHEL 9's glibc 2.34 provides `libc.so.6(GLIBC_2.35)`
-through backports, so a libc capability let it install binaries that can't start. Weak
-recommendations still use package names and do not block installation.
-
-Before publishing a Linux release:
-
-- [ ] Check `rpm -qp --requires` on both architectures for the runtime capabilities
-  above, including the Vulkan/EGL alternative and glibc floor.
-- [ ] Install and start the package on the target RPM distributions. Synthetic
-  provider tests verify metadata resolution, not a real desktop installation.
-
-**RISC-V.** The `linux-riscv64` job cross-compiles `riscv64gc-unknown-linux-gnu` on `ubuntu-24.04`
-against riscv64 libraries from ports.ubuntu.com (so the floor there is glibc 2.39) and runs
-`package.sh --formats tar` with `CROSS_ARCH`, `CROSS_TARGET`, `CROSS_COMPILE` and
-`EMULATOR=qemu-riscv64` set: a `.tar.gz` only, with `vectorcraft-cli --version` run under QEMU.
-
-**AppImage updates.** Each AppImage embeds the update information
-`gh-releases-zsync|685ks|vectorcraft|latest|vectorcraft-*-linux-<arch>.AppImage.zsync`
-(appimagetool `-u`), and `package.sh` writes the matching `.zsync` beside it when `zsyncmake` (the
-`zsync` package) is installed. [AppImageUpdate](https://github.com/AppImageCommunity/AppImageUpdate)
-and AppImageLauncher then download only the changed blocks from the newest published,
-non-pre-release release. The job checks both are there.
-
-**Flatpak.** The `flatpak` jobs (x86_64 on `ubuntu-24.04`, aarch64 on `ubuntu-24.04-arm`) take the
-Linux job's tarball and repackage it with `packaging/linux/flatpak-bundle.sh` and
-`packaging/linux/flatpak/app.freedev.ainz.ks.VectorCraft.bundle.yml` into a single-file bundle
-(`flatpak install --user vectorcraft-<v>-linux-<arch>.flatpak`), then install it and run
-`vectorcraft-cli --version` in the sandbox. No Rust build happens there, so the bundle carries the
-same binaries as the AppImage. `packaging/linux/flatpak/app.freedev.ainz.ks.VectorCraft.yml` is the
-from-source manifest for a Flathub submission (its header says how to build it); packaging-lint
-keeps the runtime and sandbox permissions of the two manifests identical.
-
-### FreeBSD
-
-GitHub has no FreeBSD runners, so the job builds in a FreeBSD 14.3 VM on `ubuntu-latest` (the same
-image as `.github/workflows/freebsd.yml`). `packaging/freebsd/package.sh` writes a
-`/usr/local`-style tree; users install it with
-`tar -xzf vectorcraft-*-freebsd-x86_64.tar.gz --strip-components 1 -C /usr/local`.
-
 ### Web
 
 The web job builds `apps/vectorcraft-web` with trunk and zips the static site
@@ -224,15 +117,13 @@ the job fails and asks for a version bump (`cargo xtask version set`).
 
 ## Secrets
 
-The jobs that sign (macOS, Windows) and the draft-release job run in the `release` environment,
+The jobs that sign (Windows) and the draft-release job run in the `release` environment,
 which only the `release` branch can use and which holds the signing secrets. The other jobs get no
 secrets. Every secret is optional: a missing one produces unsigned artifacts and a
 warning, never a failed build.
 
 | Secret | Used for |
 |---|---|
-| `APPLE_CERTIFICATE`, `APPLE_CERTIFICATE_PASSWORD`, `KEYCHAIN_PASSWORD` | the Developer ID certificate (base64 `.p12`), imported into a temporary keychain by `packaging/macos/import-cert.sh` |
-| `APPLE_ID`, `APPLE_PASSWORD`, `APPLE_TEAM_ID` | notarization (`APPLE_PASSWORD` is an app-specific password) |
 | `WINDOWS_CERTIFICATE`, `WINDOWS_CERTIFICATE_PASSWORD` | Windows signing with a `.pfx` |
 | `AZURE_TENANT_ID`, `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET`, `AZURE_SIGNING_ENDPOINT`, `AZURE_SIGNING_ACCOUNT`, `AZURE_CERT_PROFILE` | Windows signing with Azure Trusted Signing |
 
