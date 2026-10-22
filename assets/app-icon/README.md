@@ -1,48 +1,29 @@
 # VectorCraft app icon
 
-**Creature:** a regal engraved dragon, VectorCraft's mascot.
+A Bézier curve with its anchors and handles, drawn as a simple line glyph in the Arthavan Projects house style.
+Every app shares the same tile shape and glyph style, so the family reads as one set; each app has
+its own muted tint (hue 335°), and the glyph tells them apart.
 
-**Style:** an engraving-style portrait in the Crafting Apps owl template (the FilmCraft owl): a tight
-head-and-shoulders portrait on a full-bleed field, no frame or roundel, with the body running off the tile.
+## Palette
 
-**Palette** (exactly three colours):
+The house style's dark tile and light accent, tinted to this app's hue:
 
 | Colour | Hex | Used for |
 |---|---|---|
-| Ink | `#0b0b0c` | line work and contour |
-| Paper | `#efe9dc` | the figure |
-| VectorCraft colour | `#e8573f` | the full-bleed field |
+| Tile | `#4d2335` → `#1a0a11` | Vertical gradient filling the rounded square |
+| Hairline | white at 14% | Inner edge of the tile |
+| Accent | `#e198b7` | The glyph's strokes |
+| Accent bright | `#f4c2d7` | Highlights in the glyph |
+| Accent low | `#7f3956` | Soft fills behind the glyph |
 
-**Tile:** `viewBox="0 0 512 512"`, a rounded square with `rx=112`, clipped. The macOS files add Apple's
-transparent margin (tile = 824/1024 of the canvas); Windows and Linux use the tile edge to edge.
+## Geometry
 
-**Provenance:** the owner's original drawing (2880 px, keyed to the palette), vectorised with
-craftrules `assets/logo-options/_tools/vectorize_tile.py`. The drawing is kept in craftrules at
-`craftrules/assets/app-icons/vectorcraft/source.png`, not here. `vectorcraft.svg` is the canonical
-artwork. Licence: see `LICENSE.txt`.
+A 512 × 512 viewBox, clipped to a rounded square with `rx=112`; glyph strokes are 30 units with
+round caps, so they stay legible at 16-32 px. Windows and Linux use the full tile. macOS files
+sit on Apple's grid (an 824/1024 body with a transparent margin, made by widening the viewBox).
 
-## Files
+## Provenance and licence
 
-| File | What | Used by |
-|---|---|---|
-| `vectorcraft.svg` | master vector (traced at 2048 px, about 700 KB) | source for everything below |
-| `vectorcraft-small.svg` | lighter vector (traced at 1024 px, about 370 KB) | `hicolor/scalable` |
-| `vectorcraft-1024.png` | full tile, 1024 px | docs, store listings |
-| `vectorcraft-macos-512.png` | tile with Apple margin, 512 px | runtime Dock icon (`apps/vectorcraft/src/main.rs`) |
-| `vectorcraft.icns` | macOS icon set, 16 to 1024 px | unused since macOS packaging was removed |
-| `vectorcraft.ico` | Windows icon, 16 to 256 px | `apps/vectorcraft/build.rs` (embedded in the `.exe`) |
-| `hicolor/<size>/apps/app.freedev.ainz.ks.VectorCraft.png` | Linux theme icons, 16 to 512 px; the 256 one is also the runtime icon on Windows and Linux, the 128 one the brand mark in the app bar and About box (`crates/ui-egui/src/brand.rs`) | runtime icon |
-| `hicolor/scalable/apps/app.freedev.ainz.ks.VectorCraft.svg` | Linux scalable icon | as above |
-
-## How it reaches each OS
-
-- **macOS:** the app sets the Dock / app-switcher icon at runtime (`ViewportBuilder::with_icon`).
-- **Windows:** `build.rs` embeds `vectorcraft.ico` and VERSIONINFO with `winresource` (taskbar, Start
-  menu, Explorer, Alt-Tab); the runtime icon covers the title bar.
-- **Linux:** the app sets its Wayland app ID / X11 class to `app.freedev.ainz.ks.VectorCraft`.
-
-## Regenerate
-
-Edit or replace `vectorcraft.svg` (and `vectorcraft-small.svg`), then run `packaging/icons.sh`
-(needs `resvg`; `iconutil` on macOS for the `.icns`). It writes every PNG, the `.ico` (via
-`cargo xtask ico`) and the `.icns`.
+Original work: written by hand as SVG for this project, no source image traced or copied.
+MIT OR Apache-2.0, like the code. `vectorcraft.svg` is the master; `packaging/icons.sh` renders every
+other file here from it.

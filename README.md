@@ -282,7 +282,7 @@ with its author, source and license in [ASSETS.md](ASSETS.md). Release builds al
 fonts of [craft-fonts](https://github.com/685ks/craft-fonts/blob/main/ATTRIBUTION.md) (Japanese,
 Simplified Chinese and Arabic faces; SIL Open Font License 1.1).
 
-The app icon (an engraved dragon on VectorCraft red, `#e8573f`) is the owner's original artwork; its
+The app icon (a rose Bézier curve on a dark rose tile, in the house style) is original artwork; its
 palette and files are in [`assets/app-icon/`](assets/app-icon/README.md).
 
 This distribution is a fork of [storytold/vectorcraft](https://github.com/storytold/vectorcraft),
