@@ -1,5 +1,5 @@
 # Quick static checks for the release pipeline (seconds, no Rust build): workflow syntax,
-# packaging shell/PowerShell scripts, and the Linux desktop/AppStream/Flatpak metadata.
+# packaging shell scripts, the WiX XML and packaging/app.toml.
 name: Packaging lint
 
 on:
@@ -27,16 +27,11 @@ jobs:
       - name: Install validators
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends desktop-file-utils libxml2-utils shellcheck python3-yaml
-      - name: Validate the desktop entry, XML metadata and release metadata
+          sudo apt-get install -y --no-install-recommends libxml2-utils shellcheck
+      - name: Validate the WiX XML and release metadata
         run: |
           set -euo pipefail
-          desktop-file-validate packaging/linux/app.freedev.ainz.ks.VectorCraft.desktop
-          xmllint --noout packaging/linux/app.freedev.ainz.ks.VectorCraft.metainfo.xml.in \
-            packaging/linux/app.freedev.ainz.ks.VectorCraft.mime.xml packaging/windows/vectorcraft.wxs \
-            packaging/macos/Info.plist.in
+          xmllint --noout packaging/windows/vectorcraft.wxs
           python3 -c 'import tomllib; d = tomllib.load(open("packaging/app.toml", "rb")); assert d["bundle_id"] == "app.freedev.ainz.ks.VectorCraft" and d["publisher"] == "Arthavan Projects", d'
       - name: Shell scripts
-        run: shellcheck -S error packaging/*.sh packaging/linux/*.sh packaging/macos/*.sh packaging/web/*.sh packaging/freebsd/*.sh
-      - name: App-specific installer and package checks
-        run: bash packaging/check-app-specific.sh
+        run: shellcheck -S error packaging/*.sh packaging/web/*.sh

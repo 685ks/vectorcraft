@@ -10,13 +10,13 @@
 
 <p align="center">
   A fast, open-source vector illustration workflow. It runs natively on
-  macOS, Windows, Linux and FreeBSD, and in the browser via WebAssembly.
+  Windows, and in the browser via WebAssembly.
 </p>
 
 <p align="center">
   <img alt="Status: in active development" src="https://img.shields.io/badge/status-in%20active%20development-e8573f?style=flat-square">
   <img alt="Written in pure Rust" src="https://img.shields.io/badge/pure-Rust-b83a24?style=flat-square&logo=rust&logoColor=white">
-  <img alt="Runs on macOS, Windows, Linux, FreeBSD and the web" src="https://img.shields.io/badge/runs%20on-macOS%20%C2%B7%20Windows%20%C2%B7%20Linux%20%C2%B7%20FreeBSD%20%C2%B7%20Web-555555?style=flat-square">
+  <img alt="Runs on Windows and the web" src="https://img.shields.io/badge/runs%20on-Windows%20%C2%B7%20Web-555555?style=flat-square">
   <img alt="MCP server for agents" src="https://img.shields.io/badge/agents-MCP%20server-555555?style=flat-square">
   <img alt="License: MIT OR Apache-2.0" src="https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-555555?style=flat-square">
 </p>
@@ -154,7 +154,6 @@ cargo run --release -p vectorcraft -- --control 7979        # + JSON control cha
 cargo run --release -p vectorcraft-cli -- mcp               # MCP server (stdio)
 cargo run --release -p vectorcraft-cli -- run --in examples/ribbons.vectorcraft --export out.pdf   # headless batch
 cargo run --release -p vectorcraft-cli -- bench examples/neon-drive.vectorcraft                   # render timing
-cargo xtask bundle                                        # dist/VectorCraft.app (macOS)
 cd apps/vectorcraft-web && trunk build --release            # web build → dist/web
 cargo xtask ci                                            # fmt, clippy, tests, layering, wasm, vendor names
 ```
@@ -262,29 +261,6 @@ signed and published. Every bundled asset is listed with its licence in [`ASSETS
 | x86 (32-bit) | `vectorcraft-<ver>-windows-x86.msi` | `vectorcraft-<ver>-windows-x86-portable.zip` |
 
 Installers and executables are code-signed.
-
-### macOS
-
-| Build | File | Notes |
-|---|---|---|
-| App, universal (Apple silicon + Intel) | `vectorcraft-<ver>-macos-universal.dmg` | Signed and notarized |
-| Command-line tool, universal | `vectorcraft-cli-<ver>-macos-universal.zip` | Signed and notarized |
-
-### Linux
-
-| Format | x86_64 | aarch64 (ARM64) | Notes |
-|---|---|---|---|
-| AppImage | `vectorcraft-<ver>-linux-x86_64.AppImage` | `vectorcraft-<ver>-linux-aarch64.AppImage` | Runs anywhere; updates itself with [AppImageUpdate](https://github.com/AppImageCommunity/AppImageUpdate) (`.zsync` files) |
-| Flatpak | `vectorcraft-<ver>-linux-x86_64.flatpak` | `vectorcraft-<ver>-linux-aarch64.flatpak` | Sandboxed; `flatpak install --user <file>` |
-| Debian/Ubuntu | `vectorcraft-<ver>-linux-x86_64.deb` | `vectorcraft-<ver>-linux-aarch64.deb` | |
-| Fedora/RHEL/openSUSE | `vectorcraft-<ver>-linux-x86_64.rpm` | `vectorcraft-<ver>-linux-aarch64.rpm` | |
-| Tarball | `vectorcraft-<ver>-linux-x86_64.tar.gz` | `vectorcraft-<ver>-linux-aarch64.tar.gz` | Unpack anywhere |
-
-### FreeBSD
-
-| Build | File |
-|---|---|
-| x86_64 | `vectorcraft-<ver>-freebsd-x86_64.tar.gz` |
 
 ### Web (WebAssembly)
 

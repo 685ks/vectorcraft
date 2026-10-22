@@ -29,20 +29,17 @@ artwork. Licence: see `LICENSE.txt`.
 | `vectorcraft-small.svg` | lighter vector (traced at 1024 px, about 370 KB) | `hicolor/scalable` |
 | `vectorcraft-1024.png` | full tile, 1024 px | docs, store listings |
 | `vectorcraft-macos-512.png` | tile with Apple margin, 512 px | runtime Dock icon (`apps/vectorcraft/src/main.rs`) |
-| `vectorcraft.icns` | macOS icon set, 16 to 1024 px | `cargo xtask bundle` (`CFBundleIconFile`) |
+| `vectorcraft.icns` | macOS icon set, 16 to 1024 px | unused since macOS packaging was removed |
 | `vectorcraft.ico` | Windows icon, 16 to 256 px | `apps/vectorcraft/build.rs` (embedded in the `.exe`) |
-| `hicolor/<size>/apps/app.freedev.ainz.ks.VectorCraft.png` | Linux theme icons, 16 to 512 px; the 256 one is also the runtime icon on Windows and Linux, the 128 one the brand mark in the app bar and About box (`crates/ui-egui/src/brand.rs`) | `packaging/linux/app.freedev.ainz.ks.VectorCraft.desktop` |
+| `hicolor/<size>/apps/app.freedev.ainz.ks.VectorCraft.png` | Linux theme icons, 16 to 512 px; the 256 one is also the runtime icon on Windows and Linux, the 128 one the brand mark in the app bar and About box (`crates/ui-egui/src/brand.rs`) | runtime icon |
 | `hicolor/scalable/apps/app.freedev.ainz.ks.VectorCraft.svg` | Linux scalable icon | as above |
 
 ## How it reaches each OS
 
-- **macOS:** the app sets the Dock / app-switcher icon at runtime (`ViewportBuilder::with_icon`); the
-  `.app` from `cargo xtask bundle` carries `vectorcraft.icns`.
+- **macOS:** the app sets the Dock / app-switcher icon at runtime (`ViewportBuilder::with_icon`).
 - **Windows:** `build.rs` embeds `vectorcraft.ico` and VERSIONINFO with `winresource` (taskbar, Start
   menu, Explorer, Alt-Tab); the runtime icon covers the title bar.
-- **Linux:** install `packaging/linux/app.freedev.ainz.ks.VectorCraft.desktop` to `share/applications/` and
-  `hicolor/` to `share/icons/`. The app sets its Wayland app ID / X11 class to
-  `app.freedev.ainz.ks.VectorCraft`, so the dock matches the window to the launcher.
+- **Linux:** the app sets its Wayland app ID / X11 class to `app.freedev.ainz.ks.VectorCraft`.
 
 ## Regenerate
 
